@@ -1,0 +1,81 @@
+#ifndef GRID_H
+#define GRID_H
+
+#include <vector>
+#include "../imgui/imgui.h"
+#include <iostream>
+
+#define GRID_MIN_SIZE 10.0f
+#define GRID_MIN_PADDING 2.0f
+
+enum class GridShape {
+    NONE,
+    CROSS,
+    CIRCLE,
+    DRAW,
+};
+
+std::ostream& operator<<(std::ostream& os, const GridShape& shape);
+
+
+class Grid {
+    private:
+        float cellSize;
+        float padding;
+        float startX;
+        float startY;
+        int rows;
+        int cols;
+        GridShape currentShape = GridShape::NONE;
+        bool hovered = false;
+        bool clicked = false;
+        std::vector<std::vector<Grid>> subGrids;
+        
+    public:
+        Grid(int rows = 1, int cols = 1, int rec = 0, float cellSize = 50.0f, float padding = 2.0f);
+        
+        //getters et setters pour hoverd clicked
+        bool isHovered() const { return hovered; }
+        bool isClicked() const { return clicked; }
+        void setHovered(bool value) { hovered = value; }
+        void setClicked(bool value) { clicked = value; }
+        void toggleClicked() { clicked = !clicked; }
+
+        void setWindowSize(float width, float height);
+        void setPosition(float x, float y);
+        const GridShape getShape() const { return currentShape; }
+        void setShape(GridShape shape);
+        void drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath = {}, std::vector<int> currentPath = {}, int recursionLevel = 0);
+        int getRows() const { return rows; }
+        int getCols() const { return cols; }
+        float getTotalWidth() const { return cols * (cellSize + padding) - padding; }
+        float getTotalHeight() const { return rows * (cellSize + padding) - padding; }
+        float getCellSize() const { return cellSize; }
+        float getPadding() const { return padding; }
+        Grid& getSubGrid(int row, int col);
+        const Grid& getSubGrid(int row, int col) const;
+        void resetGrid();
+        bool isLeaf() const { return subGrids.empty(); }
+
+        bool isWinningShape(GridShape shape) const {
+            return (shape == GridShape::CROSS || shape == GridShape::CIRCLE);
+        }
+
+        bool isLockedShaped() const {
+            return (currentShape != GridShape::NONE);
+        }
+
+        Grid getGridFromPath(const std::vector<int>& path) {
+            Grid* grid = this;
+            for (int index : path) {
+                int row = index / cols;
+                int col = index % cols;
+                grid = &grid->subGrids[row][col];
+            }
+            return *grid;
+        }
+
+        GridShape checkVictory();
+};
+
+#endif // GRID_H
