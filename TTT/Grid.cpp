@@ -2,6 +2,17 @@
 #include <iostream>
 #include <algorithm>
 
+template <typename T>
+bool starts_with(const std::vector<T>& vec, const std::vector<T>& prefix) {
+    // Si le préfixe est plus grand que le vecteur, il ne peut pas être au début
+    if (prefix.size() > vec.size()) {
+        return false;
+    }
+    
+    // Compare les premiers éléments du vecteur avec le préfixe
+    return std::equal(prefix.begin(), prefix.end(), vec.begin());
+}
+
 std::ostream& operator<<(std::ostream& os, const GridShape& shape){
     switch (shape) {
         case GridShape::NONE: os << "NONE"; break;
@@ -23,7 +34,7 @@ Grid::Grid(int rows, int cols, int rec, float cellSize, float padding)
                 if(rec > 0) {
                     subGrids[r].emplace_back(rows, cols, rec - 1, cellSize, padding / 1.5f);
                 } else {
-                    subGrids[r].emplace_back(1, 1, cellSize, padding);
+                    subGrids[r].emplace_back(1, 1, 0, cellSize, padding);
                 }
             }
         }
@@ -95,7 +106,7 @@ void Grid::drawShape(ImDrawList* draw_list, const ImVec2& start, const ImVec2& e
     }
 }
 
-void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath, std::vector<int> currentPath, int recursionLevel, bool lock){
+void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath, std::vector<int> currentPath, int recursionLevel){
     
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     
@@ -111,49 +122,39 @@ void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGrid
             ImVec2(window_pos.x, window_pos.y), 
             ImVec2(window_pos.x + cellSize, window_pos.y + cellSize), 
             color, 
-            0.0f
+            15.0f
         );
 
         draw_list->AddRect(
-            ImVec2(window_pos.x, window_pos.y), 
+            window_pos, 
             ImVec2(window_pos.x + cellSize, window_pos.y + cellSize), 
             IM_COL32(50, 50, 50, 255), 
-            0.0f, 
+            cellSize/10, 
             0, 
             1.0f
         );
+
+        if(!starts_with(currentPath, targetSubGridPath))
+            draw_list->AddRectFilled(
+                window_pos, 
+                ImVec2(window_pos.x + cellSize, window_pos.y + cellSize), 
+                IM_COL32(0, 0, 0, 100), // Gris semi-transparent
+                0.0f
+            );
+
     } else {
         for(int r = 0; r < getRows(); ++r){
             for(int c = 0; c < getCols(); ++c){
-
-                bool sub_lock = lock;
-                if(!lock && !targetSubGridPath.empty() && recursionLevel < targetSubGridPath.size()){
-                    int index = targetSubGridPath[recursionLevel];
-                    int target_r = index / getCols();
-                    int target_c = index % getCols();
-                    if(r != target_r || c != target_c){
-                        sub_lock = true;
-                    }
-                 } 
-
-                 float x = window_pos.x + c * (cellSize + padding);
-                 float y = window_pos.y + r * (cellSize + padding);
-                 if(!lock && (sub_lock || isLockedShaped())){
-                    subGrids[r][c].drawv2(ImVec2(x, y), targetSubGridPath, currentPath, recursionLevel + 1, true);
-                    float x = window_pos.x + c * (cellSize + padding);
-                    float y = window_pos.y + r * (cellSize + padding);
-                    draw_list->AddRectFilled(
-                        ImVec2(x, y), 
-                        ImVec2(x + cellSize, y + cellSize), 
-                        IM_COL32(0, 0, 0, 100), // Gris semi-transparent
-                        0.0f
-                    );
-                 }else{
-                    subGrids[r][c].drawv2(ImVec2(x, y), targetSubGridPath, currentPath, recursionLevel + 1, false);
-                 }
-                }
+                float x = window_pos.x + c * (cellSize + padding);
+                float y = window_pos.y + r * (cellSize + padding);
+                currentPath.push_back(r * getCols() + c);
+                subGrids[r][c].drawv2(ImVec2(x, y), targetSubGridPath, currentPath, recursionLevel + 1);
+                currentPath.pop_back();          
             }
+        }
     }
+
+    // Affiche Shape
     if (currentShape != GridShape::NONE) {
         ImVec2 grid_start = window_pos;
         ImVec2 grid_end = ImVec2(

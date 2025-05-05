@@ -73,20 +73,28 @@ bool GameState::updatev2(const ImVec2& window_pos, Grid& grid, std::vector<int> 
 }
 
 void GameState::endTurn(const std::vector<int>& lastPlayedSubGridPath, Grid& grid) {
-  if (lastPlayedSubGridPath.empty()) {
-    targetSubGridPath.clear();
+    // Changement de joueur
     currentPlayer = (currentPlayer == GridShape::CROSS) ? GridShape::CIRCLE : GridShape::CROSS;
-    return;
-  }
 
-  targetSubGridPath = lastPlayedSubGridPath;
-  targetSubGridPath.erase(targetSubGridPath.begin());
+    if (lastPlayedSubGridPath.empty()) {
+        targetSubGridPath.clear();
+        return;
+    }
 
-  while(grid.getGridFromPath(targetSubGridPath).getShape() != GridShape::NONE && !targetSubGridPath.empty()) {
+    // On commence par la grille cible complète
+    targetSubGridPath = lastPlayedSubGridPath;
     targetSubGridPath.erase(targetSubGridPath.begin());
-  }
     
-  currentPlayer = (currentPlayer == GridShape::CROSS) ? GridShape::CIRCLE : GridShape::CROSS;
+    // On cherche le premier niveau avec une shape non-NONE en partant de la racine
+    std::vector<int> currentPath;
+    for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
+        currentPath.push_back(targetSubGridPath[i]);        
+        if (grid.getGridFromPath(currentPath).getShape() != GridShape::NONE) {
+            currentPath.pop_back();
+            targetSubGridPath.assign(currentPath.begin(), currentPath.end());
+            break;
+        }
+    }
 }
 
 std::ostream& operator<<(std::ostream& os, const GameState& gameState){

@@ -59,7 +59,7 @@ int main()
     // --- Composant ImGui - Start--------------------
 
 
-    Grid mainGrid(GRID_SIZE, GRID_SIZE, GRID_REC, 150.f, 7.f);
+    Grid mainGrid(GRID_SIZE, GRID_SIZE, GRID_REC, 150.f, 20.f);
     GameState gameState = GameState();
     
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_None; // Supprimez NoMove et NoResize

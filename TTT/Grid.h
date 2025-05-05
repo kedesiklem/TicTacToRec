@@ -45,7 +45,7 @@ class Grid {
         void setPosition(float x, float y);
         const GridShape getShape() const { return currentShape; }
         void setShape(GridShape shape);
-        void drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath = {}, std::vector<int> currentPath = {}, int recursionLevel = 0, bool lock = false);
+        void drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath = {}, std::vector<int> currentPath = {}, int recursionLevel = 0);
         int getRows() const { return rows; }
         int getCols() const { return cols; }
         float getTotalWidth() const { return cols * (cellSize + padding) - padding; }
