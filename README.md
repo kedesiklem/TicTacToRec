@@ -55,5 +55,5 @@ Voir `TODO.org`
 
 ## Licence
 
-- Ce projet global : [CC BY-NC 4.0](LICENCE.txt)
+- Ce projet global : [CC BY-NC 4.0](LICENCE.md)
 - ImGui (docking branch) : [MIT License](imgui/LICENSE.txt)
