@@ -44,8 +44,9 @@ Sinon, va falloir mettre les mains dans la tambouille.
 ## Fichiers
 
 - `main.cpp` : logique principale du jeu
-- `imgui/` : dependance de l'IHM
-- `TTT/` : backend
+- `scr/` code
+- `src/TTT/` : backend
+- `src/imgui/` : dependance de l'IHM
 - `TODO.org` : tâches restantes
 - `README.md` : vous êtes ici
 
