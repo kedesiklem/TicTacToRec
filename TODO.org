@@ -1,0 +1,7 @@
+* DONE Base visuel fonctionel
+* DONE Recursion
+* DONE Calcule coup permis
+* TODO Bien parametrer la partie DEBUG
+* TODO Ajouter UI pour diverses commandes
+* TODO Implémenter un retour arrière, Ctrl-Z
+* TODO Afficher explicitement la fin de la partie
