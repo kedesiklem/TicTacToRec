@@ -21,7 +21,7 @@ Grid::Grid(int rows, int cols, int rec, float cellSize, float padding)
             subGrids[r].reserve(cols);
             for (int c = 0; c < cols; ++c) {
                 if(rec > 0) {
-                    subGrids[r].emplace_back(rows, cols, rec - 1, cellSize, padding / 2);
+                    subGrids[r].emplace_back(rows, cols, rec - 1, cellSize, padding / 1.5f);
                 } else {
                     subGrids[r].emplace_back(1, 1, cellSize, padding);
                 }
@@ -50,7 +50,52 @@ void Grid::setShape(GridShape shape) {
     currentShape = shape;
 }
 
-void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath, std::vector<int> currentPath, int recursionLevel){
+void Grid::drawCross(ImDrawList* draw_list, const ImVec2& start, const ImVec2& end, float width, ImU32 color) {
+    int thickness = 1;
+    draw_list->AddLine(
+        ImVec2(start.x + width, start.y + width),
+        ImVec2(end.x - width, end.y - width),
+        color, thickness * width);
+    draw_list->AddLine(
+        ImVec2(start.x + width, end.y - width),
+        ImVec2(end.x - width, start.y + width),
+        color, thickness * width);
+}
+
+void Grid::drawCircle(ImDrawList* draw_list, const ImVec2& start, const ImVec2& end, float width, ImU32 color) {
+    ImVec2 s = ImVec2(start.x + width/2, start.y + width/2); 
+    ImVec2 e = ImVec2(end.x - width/2, end.y - width/2); 
+    
+    int thickness = 1;
+    draw_list->AddCircle(
+        ImVec2((s.x + e.x) * 0.5f, (s.y + e.y) * 0.5f),
+        (e.x - s.x) * 0.45f,
+        color,
+        0, thickness * width);
+}
+
+void Grid::drawShape(ImDrawList* draw_list, const ImVec2& start, const ImVec2& end, 
+    float width, ImU32 cross_color, 
+    ImU32 circle_color) {
+    switch(currentShape) {
+    case GridShape::CROSS:
+        drawCross(draw_list, start, end, width, cross_color);
+        break;
+        
+    case GridShape::CIRCLE:
+        drawCircle(draw_list, start, end, width, circle_color);
+        break;
+        
+    case GridShape::DRAW:
+        break;
+        
+    case GridShape::NONE:
+    default:
+        break;
+    }
+}
+
+void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath, std::vector<int> currentPath, int recursionLevel, bool lock){
     
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     
@@ -81,21 +126,20 @@ void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGrid
         for(int r = 0; r < getRows(); ++r){
             for(int c = 0; c < getCols(); ++c){
 
-
-                bool lock = false;
-                if(!targetSubGridPath.empty() && recursionLevel < targetSubGridPath.size()){
+                bool sub_lock = lock;
+                if(!lock && !targetSubGridPath.empty() && recursionLevel < targetSubGridPath.size()){
                     int index = targetSubGridPath[recursionLevel];
                     int target_r = index / getCols();
                     int target_c = index % getCols();
                     if(r != target_r || c != target_c){
-                        lock = true;
+                        sub_lock = true;
                     }
                  } 
 
                  float x = window_pos.x + c * (cellSize + padding);
                  float y = window_pos.y + r * (cellSize + padding);
-                 if(lock ||isLockedShaped()){
-                    subGrids[r][c].drawv2(ImVec2(x, y), {}, currentPath, recursionLevel + 1);
+                 if(!lock && (sub_lock || isLockedShaped())){
+                    subGrids[r][c].drawv2(ImVec2(x, y), targetSubGridPath, currentPath, recursionLevel + 1, true);
                     float x = window_pos.x + c * (cellSize + padding);
                     float y = window_pos.y + r * (cellSize + padding);
                     draw_list->AddRectFilled(
@@ -105,7 +149,7 @@ void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGrid
                         0.0f
                     );
                  }else{
-                    subGrids[r][c].drawv2(ImVec2(x, y), targetSubGridPath, currentPath, recursionLevel + 1);
+                    subGrids[r][c].drawv2(ImVec2(x, y), targetSubGridPath, currentPath, recursionLevel + 1, false);
                  }
                 }
             }
@@ -117,27 +161,11 @@ void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGrid
             window_pos.y + rows * (cellSize + padding) - padding
         );
 
-        float width = (grid_end.x - grid_start.x) / 20;
-        switch(currentShape) {
-            case GridShape::CROSS:
-                draw_list->AddLine(
-                    ImVec2(grid_start.x + width, grid_start.y + width),
-                    ImVec2(grid_end.x - width, grid_end.y - width),
-                    IM_COL32(255, 0, 0, 255), width);
-                draw_list->AddLine(
-                    ImVec2(grid_start.x + width, grid_end.y - width),
-                    ImVec2(grid_end.x - width, grid_start.y + width),
-                    IM_COL32(255, 0, 0, 255), width);
-                break;
-                
-            case GridShape::CIRCLE:
-                draw_list->AddCircle(
-                    ImVec2((grid_start.x + grid_end.x) * 0.5f, (grid_start.y + grid_end.y) * 0.5f),
-                    (grid_end.x - grid_start.x) * 0.45f,
-                    IM_COL32(0, 0, 255, 255),
-                    0, width);
-                break;
-        }
+        float width = (grid_end.x - grid_start.x) / 10;
+
+        ImU32 color =   (currentShape == GridShape::CROSS) ? IM_COL32(255, 0, 0, 155) :  IM_COL32(0, 0, 255, 155);
+
+        drawShape(draw_list,grid_start,grid_end, width);
     }
 }
 

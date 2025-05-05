@@ -79,6 +79,9 @@ int main()
         ImGui::NewFrame();
 
         // --- Fenetre ImGui - Start--------------------
+        if(ImGui::IsKeyPressed(ImGuiKey_Escape)){
+            glfwSetWindowShouldClose(window, GLFW_TRUE);  // Demande la fermeture de la fenêtre
+        }
 
         if(ImGui::IsKeyPressed(ImGuiKey_R)) {
             mainGrid.resetGrid();

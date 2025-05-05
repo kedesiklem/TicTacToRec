@@ -45,7 +45,7 @@ class Grid {
         void setPosition(float x, float y);
         const GridShape getShape() const { return currentShape; }
         void setShape(GridShape shape);
-        void drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath = {}, std::vector<int> currentPath = {}, int recursionLevel = 0);
+        void drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath = {}, std::vector<int> currentPath = {}, int recursionLevel = 0, bool lock = false);
         int getRows() const { return rows; }
         int getCols() const { return cols; }
         float getTotalWidth() const { return cols * (cellSize + padding) - padding; }
@@ -76,6 +76,14 @@ class Grid {
         }
 
         GridShape checkVictory();
+
+        void drawCross(ImDrawList* draw_list, const ImVec2& start, const ImVec2& end, float width, ImU32 color);
+
+        void drawCircle(ImDrawList* draw_list, const ImVec2& start, const ImVec2& end, float width, ImU32 color);
+
+        void drawShape(ImDrawList* draw_list, const ImVec2& start, const ImVec2& end, 
+            float width = 2.0f, ImU32 cross_color = IM_COL32(255, 0, 0, 255), 
+            ImU32 circle_color = IM_COL32(50, 50, 255, 255));
 };
 
 #endif // GRID_H

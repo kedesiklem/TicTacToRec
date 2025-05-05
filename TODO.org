@@ -1,7 +1,8 @@
 * DONE Base visuel fonctionel
 * DONE Recursion
 * DONE Calcule coup permis
-* TODO Bien parametrer la partie DEBUG
 * TODO Ajouter UI pour diverses commandes
-* TODO Implémenter un retour arrière, Ctrl-Z
+* TODO Implémenter un retour arrière et un historique des coups joué
+* TODO Bien parametrer la partie DEBUG
 * TODO Afficher explicitement la fin de la partie
+* TODO Mode en reseau
