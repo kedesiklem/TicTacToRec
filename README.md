@@ -10,6 +10,15 @@
 - Interface console simple
 - IA de base (à venir)
 
+## Prerequis
+
+- Assurez-vous d’avoir `g++`, `GLFW`, et `OpenGL` installés
+- Pensez à récupérer imgui-docking, inclus dans les sub-modules :
+
+```bash
+git submodule update --init --recursive
+```
+
 ## Compilation
 
 ### Via Makefile (recommandé pour Linux/Unix)

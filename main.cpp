@@ -28,7 +28,7 @@ int main()
 
     // 2. Création de la fenêtre
     GLFWwindow* window = glfwCreateWindow(
-        1280, 1280,                              // Largeur, Hauteur
+        780, 780,                              // Largeur, Hauteur
         "Fenêtre Minimaliste GLFW + ImGui",     // Titre
         nullptr,                                // Mode plein écran (none = windowed)
         nullptr                                 // Partage de contexte (none = non)
