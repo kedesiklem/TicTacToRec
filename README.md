@@ -34,7 +34,7 @@ Sinon, va falloir mettre les mains dans la tambouille.
 ## Utilisation
 
 ```bash
-./tictactorec
+./build/tictactorec
 ```
 
 ### Raccourci

@@ -2,13 +2,13 @@
 
 
 // wrapper pour update
-bool GameState::updatev2(const ImVec2& window_pos, Grid& grid){
+bool GameState::update(const ImVec2& window_pos, Grid& grid){
     std::vector<int> currentPath = {};
     std::vector<int> finalPath = {};
-    return updatev2(window_pos, grid, currentPath, finalPath, 0);
+    return update(window_pos, grid, currentPath, finalPath, 0);
 }
 
-bool GameState::updatev2(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, std::vector<int>& finalPath, int recursionLevel){
+bool GameState::update(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, std::vector<int>& finalPath, int recursionLevel){
     ImVec2 mouse_pos = ImGui::GetMousePos();
     bool mouse_left_clicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
 
@@ -56,7 +56,7 @@ bool GameState::updatev2(const ImVec2& window_pos, Grid& grid, std::vector<int> 
 
             // On ajoute la case courante au chemin
             currentPath.push_back(r * grid.getCols() + c);
-            if(updatev2(ImVec2(x, y), grid.getSubGrid(r,c), currentPath, finalPath, recursionLevel + 1)){
+            if(update(ImVec2(x, y), grid.getSubGrid(r,c), currentPath, finalPath, recursionLevel + 1)){
                 grid.setShape(grid.checkVictory());
                 updated = true;
             }
@@ -66,7 +66,6 @@ bool GameState::updatev2(const ImVec2& window_pos, Grid& grid, std::vector<int> 
 
     if(recursionLevel == 0 && updated){
         endTurn(finalPath, grid); // Utilise le chemin complet sauvegardé
-        std::cout << *this << std::endl;
     }
 
     return updated;

@@ -7,8 +7,8 @@
 
 #include "GameState.h"
 
-#define GRID_SIZE 3
-#define GRID_REC 1
+#define GRID_SIZE 2
+#define GRID_REC 3
 
 int main()
 {
@@ -61,9 +61,6 @@ int main()
 
     Grid mainGrid(GRID_SIZE, GRID_SIZE, GRID_REC, 150.f, 20.f);
     GameState gameState = GameState();
-    
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_None; // Supprimez NoMove et NoResize
-
 
 
     // --- Composant ImGui - Start--------------------
@@ -98,35 +95,23 @@ int main()
         ImGui::Begin("MainWindow", nullptr, 
             ImGuiWindowFlags_NoTitleBar |
             ImGuiWindowFlags_NoBringToFrontOnFocus |
-            ImGuiWindowFlags_NoBackground);
+            ImGuiWindowFlags_NoBackground |
+            ImGuiWindowFlags_NoResize
+        );
 
 
         ImVec2 window_pos = ImGui::GetCursorScreenPos(); // Position absolue de la fenêtre
         ImVec2 window_size = ImGui::GetContentRegionAvail();
-        
-
-        // Bloque le déplacement seulement si la souris est sur la grille
-        ImGuiWindow* current_window = ImGui::GetCurrentWindow();
-        ImRect grid_rect(
-            ImGui::GetCursorScreenPos(),
-            ImVec2(ImGui::GetCursorScreenPos().x + mainGrid.getTotalWidth(),
-                   ImGui::GetCursorScreenPos().y + mainGrid.getTotalHeight())
-        );
-        if (grid_rect.Contains(ImGui::GetMousePos())) {
-            current_window->Flags |= ImGuiWindowFlags_NoMove;
-        } else {
-            current_window->Flags &= ~ImGuiWindowFlags_NoMove;
-        }
 
 
         mainGrid.setWindowSize(window_size.x, window_size.y);
         
         // mainGrid.update(gameState, gameState.targetSubGridPath, window_pos);
-        gameState.updatev2(window_pos, mainGrid);
+        gameState.update(window_pos, mainGrid);
 
         mainGrid.getGridFromPath(gameState.targetSubGridPath).setShape(gameState.currentPlayer);
 
-        mainGrid.drawv2(window_pos, gameState.targetSubGridPath);
+        mainGrid.draw(window_pos, gameState.targetSubGridPath);
 
 
         ImGui::End();

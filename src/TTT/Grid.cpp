@@ -106,8 +106,10 @@ void Grid::drawShape(ImDrawList* draw_list, const ImVec2& start, const ImVec2& e
     }
 }
 
-void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGridPath, std::vector<int> currentPath, int recursionLevel){
+void Grid::draw(const ImVec2& window_pos, const std::vector<int> targetSubGridPath, std::vector<int> currentPath, int recursionLevel, bool locked){
     
+    locked |= currentShape != GridShape::NONE;
+
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     
     if(isLeaf()){
@@ -122,33 +124,31 @@ void Grid::drawv2(const ImVec2& window_pos, const std::vector<int> targetSubGrid
             ImVec2(window_pos.x, window_pos.y), 
             ImVec2(window_pos.x + cellSize, window_pos.y + cellSize), 
             color, 
-            15.0f
+            cellSize/10
         );
 
-        draw_list->AddRect(
-            window_pos, 
-            ImVec2(window_pos.x + cellSize, window_pos.y + cellSize), 
-            IM_COL32(50, 50, 50, 255), 
-            cellSize/10, 
-            0, 
-            1.0f
-        );
-
-        if(!starts_with(currentPath, targetSubGridPath))
+        if(!starts_with(currentPath, targetSubGridPath) || locked)
             draw_list->AddRectFilled(
                 window_pos, 
                 ImVec2(window_pos.x + cellSize, window_pos.y + cellSize), 
                 IM_COL32(0, 0, 0, 100), // Gris semi-transparent
-                0.0f
+                cellSize/10
             );
 
     } else {
         for(int r = 0; r < getRows(); ++r){
             for(int c = 0; c < getCols(); ++c){
+
                 float x = window_pos.x + c * (cellSize + padding);
                 float y = window_pos.y + r * (cellSize + padding);
                 currentPath.push_back(r * getCols() + c);
-                subGrids[r][c].drawv2(ImVec2(x, y), targetSubGridPath, currentPath, recursionLevel + 1);
+                subGrids[r][c].draw(
+                    ImVec2(x, y), 
+                    targetSubGridPath, 
+                    currentPath, 
+                    recursionLevel + 1,
+                    locked
+                );
                 currentPath.pop_back();          
             }
         }

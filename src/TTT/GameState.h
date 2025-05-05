@@ -10,8 +10,8 @@ class GameState {
 
         GameState() {targetSubGridPath.clear();}
 
-        bool updatev2(const ImVec2& window_pos, Grid& grid);
-        bool updatev2(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, std::vector<int>& finalPath, int recursionLevel);
+        bool update(const ImVec2& window_pos, Grid& grid);
+        bool update(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, std::vector<int>& finalPath, int recursionLevel);
         void endTurn(const std::vector<int>& lastPlayedSubGridPath, Grid& grid);
 
         void reset() {
