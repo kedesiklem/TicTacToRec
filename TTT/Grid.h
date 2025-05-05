@@ -2,7 +2,7 @@
 #define GRID_H
 
 #include <vector>
-#include "../imgui/imgui.h"
+#include "imgui.h"
 #include <iostream>
 
 #define GRID_MIN_SIZE 10.0f

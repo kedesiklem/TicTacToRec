@@ -1,14 +1,14 @@
 #include <GLFW/glfw3.h>
-#include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 #include <iostream>
 
-#include "TTT/GameState.h"
+#include "GameState.h"
 
 #define GRID_SIZE 3
-#define GRID_REC 2
+#define GRID_REC 1
 
 int main()
 {
@@ -28,7 +28,7 @@ int main()
 
     // 2. Création de la fenêtre
     GLFWwindow* window = glfwCreateWindow(
-        720, 720,                              // Largeur, Hauteur
+        1280, 1280,                              // Largeur, Hauteur
         "Fenêtre Minimaliste GLFW + ImGui",     // Titre
         nullptr,                                // Mode plein écran (none = windowed)
         nullptr                                 // Partage de contexte (none = non)
@@ -93,11 +93,7 @@ int main()
         // Créez une fenêtre transparente sans décoration pour couvrir toute la fenêtre principale
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("MainWindow", nullptr, 
-            ImGuiWindowFlags_NoTitleBar | 
-            ImGuiWindowFlags_NoResize | 
-            ImGuiWindowFlags_NoMove | 
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_NoTitleBar |
             ImGuiWindowFlags_NoBringToFrontOnFocus |
             ImGuiWindowFlags_NoBackground);
 
