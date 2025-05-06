@@ -6,9 +6,10 @@
 #include <iostream>
 
 #include "GameState.h"
+#include "config.h"
 
-#define GRID_SIZE 2
-#define GRID_REC 3
+#define GRID_SIZE 3
+#define GRID_REC 1
 
 int main()
 {
@@ -26,9 +27,11 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Nécessaire sur MacOS
     #endif
 
+    float sideSize = getMinSideScreen() - 35.;
+
     // 2. Création de la fenêtre
     GLFWwindow* window = glfwCreateWindow(
-        780, 780,                              // Largeur, Hauteur
+        sideSize, sideSize,                              // Largeur, Hauteur
         "Fenêtre Minimaliste GLFW + ImGui",     // Titre
         nullptr,                                // Mode plein écran (none = windowed)
         nullptr                                 // Partage de contexte (none = non)

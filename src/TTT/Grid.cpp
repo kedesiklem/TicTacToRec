@@ -2,6 +2,19 @@
 #include <iostream>
 #include <algorithm>
 
+GridShape nextShapePlayable(GridShape shape){
+    switch (shape){
+        case GridShape::CROSS:
+            return GridShape::CIRCLE;
+        
+        case GridShape::CIRCLE:
+            return GridShape::CROSS;
+
+        default:
+            return shape;
+    }
+}
+
 template <typename T>
 bool starts_with(const std::vector<T>& vec, const std::vector<T>& prefix) {
     // Si le préfixe est plus grand que le vecteur, il ne peut pas être au début
@@ -22,6 +35,16 @@ std::ostream& operator<<(std::ostream& os, const GridShape& shape){
     }
     return os;
 };
+
+Grid Grid::getGridFromPath(const std::vector<int>& path) {
+    Grid* grid = this;
+    for (int index : path) {
+        int row = index / cols;
+        int col = index % cols;
+        grid = &grid->subGrids[row][col];
+    }
+    return *grid;
+}
 
 Grid::Grid(int rows, int cols, int rec, float cellSize, float padding) 
     : rows(rows), cols(cols), cellSize(std::max(cellSize, GRID_MIN_SIZE)), padding(std::max(padding, GRID_MIN_PADDING)) {

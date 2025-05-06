@@ -73,7 +73,7 @@ bool GameState::update(const ImVec2& window_pos, Grid& grid, std::vector<int> cu
 
 void GameState::endTurn(const std::vector<int>& lastPlayedSubGridPath, Grid& grid) {
     // Changement de joueur
-    currentPlayer = (currentPlayer == GridShape::CROSS) ? GridShape::CIRCLE : GridShape::CROSS;
+    currentPlayer = nextShapePlayable(currentPlayer);
 
     if (lastPlayedSubGridPath.empty()) {
         targetSubGridPath.clear();
