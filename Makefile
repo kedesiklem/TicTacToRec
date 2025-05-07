@@ -8,19 +8,20 @@ EXE := $(BUILD_DIR)/tictactorec
 # Sources
 IMGUI_DIR := $(SRC_DIR)/external/imgui
 TTT_DIR := $(SRC_DIR)/TTT
+OTHER_DIR := $(SRC_DIR)/utils
 
 SOURCES := $(SRC_DIR)/main.cpp
 SOURCES += $(wildcard $(IMGUI_DIR)/*.cpp) \
            $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp \
            $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp \
-		   $(wildcard $(TTT_DIR)/*.cpp)
+		   $(wildcard $(TTT_DIR)/*.cpp) \
 
 # Génération des noms de fichiers objets
 OBJS := $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
 # Flags de compilation
 CXX ?= g++
-CXXFLAGS := -std=c++17 -I$(SRC_DIR) -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends -I$(TTT_DIR)
+CXXFLAGS := -std=c++17 -I$(SRC_DIR) -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends -I$(TTT_DIR) -I$(OTHER_DIR)
 CXXFLAGS += -g -Wall -Wformat
 
 # Détection de la plateforme
