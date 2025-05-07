@@ -3,6 +3,7 @@
 * DONE Calcule coup permis
 * TODO Ajouter UI pour diverses commandes
 * TODO Implémenter un retour arrière et un historique des coups joué
-* TODO Bien parametrer la partie DEBUG
-* TODO Afficher explicitement la fin de la partie
 * TODO Mode en reseau
+* TODO Coup aléatoire
+* TODO Afficher explicitement la fin de la partie
+* TODO Bien parametrer la partie DEBUG

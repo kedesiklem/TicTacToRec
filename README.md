@@ -7,23 +7,34 @@
 - Grilles de jeu récursives (grilles dans les cases)
 - Support de profondeur paramétrable
 - Mécanisme de victoire hiérarchique
-- Interface console simple
 - IA de base (à venir)
 
-## Prerequis
+## Dependance & Prérequis
 
-- Assurez-vous d’avoir `g++`, `GLFW`, et `OpenGL` installés
-- Pensez à récupérer imgui-docking, inclus dans les sub-modules :
+Pensez à récupérer imgui-docking, inclus dans les sub-modules :
 
 ```bash
 git submodule update --init --recursive
 ```
 
+Assurez-vous d'avoir installé :
+- **g++** (compilateur C++)
+- **GLFW** et **OpenGL** (bibliothèques graphiques)
+
+### Installation rapide (Linux) :
+```bash
+sudo apt install g++ libglfw3 libglfw3-dev libglu1-mesa-dev  # Ubuntu/Debian
+```
+```bash
+sudo dnf install gcc-c++ glfw glfw-devel mesa-libGLU-devel    # Fedora
+```
+```bash
+sudo pacman -S gcc glfw-x11 glu                               # Arch
+```
+
 ## Compilation
 
-### Via Makefile (recommandé pour Linux/Unix)
-
-Assurez-vous d’avoir `g++`, `GLFW`, et `OpenGL` installés, puis :
+### Via Makefile
 
 ```bash
 make
@@ -39,22 +50,25 @@ Sinon, va falloir mettre les mains dans la tambouille.
 
 ### Raccourci
 
-`R` : reset de la partie
+| Touche    | Command                       |
+|-          |-                              |
+| `R`       | Reset de la partie            |
+| `Esc`     | Quit l'application            |
 
 ## Fichiers
 
-- `main.cpp` : logique principale du jeu
-- `scr/` code
-- `src/TTT/` : backend
-- `src/imgui/` : dependance de l'IHM
-- `TODO.org` : tâches restantes
-- `README.md` : vous êtes ici
+- `src/` : Code source.
+    - `main.cpp` : Point d'entrée, logique principale.
+    - `TTT/` : Backend.
+    - `external/imgui/` : Dépendances de l'IHM.
+- `Makefile` : Compilation
+- `TODO.org` : Tâches restantes (org-mode).
+- `README.md` : Documentation (Vous êtes ici).
 
 ## À faire
 
-Voir `TODO.org`
+Voir [TODO](TODO.org)
 
 ## Licence
 
-- Ce projet global : [CC BY-NC 4.0](LICENCE.md)
-- ImGui (docking branch) : [MIT License](imgui/LICENSE.txt)
+- [CC BY-NC 4.0](LICENCE.md)

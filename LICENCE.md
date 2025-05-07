@@ -2,4 +2,4 @@ Ce projet est sous licence Creative Commons Attribution-NonCommercial 4.0 Intern
 
 Les composants tiers (comme ImGui) conservent leurs licences originales (MIT, etc.).  
 Voir les fichiers LICENSE respectifs
-[ImGui](imgui/LICENSE.txt)
+- ImGui : [MIT License](/src/external/imgui/LICENSE.txt)
