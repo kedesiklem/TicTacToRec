@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 
+
 GridShape nextShapePlayable(GridShape shape){
     switch (shape){
         case GridShape::CROSS:
@@ -12,6 +13,30 @@ GridShape nextShapePlayable(GridShape shape){
 
         default:
             return shape;
+    }
+}
+std::string GridShapeToString(GridShape shape){
+    switch (shape)
+    {
+    case GridShape::NONE :
+        return "None";
+        break;
+    
+    case GridShape::CROSS :
+        return "X";
+        break;
+    
+    case GridShape::CIRCLE :
+        return "O";
+        break;
+        
+    case GridShape::DRAW :
+        return "-";
+        break;
+    
+    default:
+        return "Undefined";
+        break;
     }
 }
 

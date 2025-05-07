@@ -1,144 +1,120 @@
-#include <GLFW/glfw3.h>
-#include "imgui.h"
-#include "imgui_internal.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
+#include <config.h>
 #include <iostream>
-
-#include "GameState.h"
-#include "config.h"
+#include <setup_interface.h>
+#include <shortcut_editor.h>
+#include <GameState.h>
 
 #define GRID_SIZE 3
 #define GRID_REC 1
 
-int main()
-{
-    // 1. Initialisation de GLFW - Gestion de la fenêtre et des entrées
-    if (!glfwInit())
-    {
-        std::cerr << "Échec de l'initialisation de GLFW" << std::endl;
+int main() {
+    // Initialisation GLFW
+    if (!glfwInit()) {
+        std::cerr << "Échec de l'initialisation GLFW" << std::endl;
         return -1;
     }
-    // Configuration des hints pour la création de la fenêtre OpenGL
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);  // Version majeure d'OpenGL
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);  // Version mineure d'OpenGL
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // Profil core (pas de fonctions dépréciées)
+
+    // Configuration fenêtre
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     #ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Nécessaire sur MacOS
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    float sideSize = getMinSideScreen() - 35.;
-
-    // 2. Création de la fenêtre
-    GLFWwindow* window = glfwCreateWindow(
-        sideSize, sideSize,                              // Largeur, Hauteur
-        "Fenêtre Minimaliste GLFW + ImGui",     // Titre
-        nullptr,                                // Mode plein écran (none = windowed)
-        nullptr                                 // Partage de contexte (none = non)
-    );
-    if (!window)
-    {
-        std::cerr << "Échec de la création de la fenêtre GLFW" << std::endl;
+    // Création fenêtre
+    GLFWwindow* window = glfwCreateWindow(getWidthScreen(), getHeightScreen(), "Jeu", nullptr, nullptr);
+    if (!window) {
+        std::cerr << "Échec création fenêtre" << std::endl;
         glfwTerminate();
         return -1;
     }
-    // Définit la fenêtre comme le contexte OpenGL courant
     glfwMakeContextCurrent(window);
-    // Active la synchronisation verticale (1 = activé, 0 = désactivé)
     glfwSwapInterval(1);
 
-    // 3. Initialisation de ImGui
+    // Initialisation ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    // Configuration de ImGui (paramètres par défaut explicites)
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Activation des contrôles clavier
-    // Style par défaut
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::StyleColorsDark();
-    // Initialisation des backends ImGui pour GLFW et OpenGL
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");  // Spécifie la version GLSL
+    ImGui_ImplOpenGL3_Init("#version 330");
 
-    // --- Composant ImGui - Start--------------------
-
-
+    // Initialisation jeu
     Grid mainGrid(GRID_SIZE, GRID_SIZE, GRID_REC, 150.f, 20.f);
-    GameState gameState = GameState();
+    GameState gameState;
 
+    LoadFonts(io, 40);
 
-    // --- Composant ImGui - Start--------------------
-
-    // 4. Boucle principale
-    while (!glfwWindowShouldClose(window))
-    {
-        // Gestion des événements (entrées, fenêtre, etc.)
+    // Boucle principale
+    while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
-        // Début d'une nouvelle frame ImGui
+        
+        // Nouvelle frame ImGui
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // --- Fenetre ImGui - Start--------------------
-        if(ImGui::IsKeyPressed(ImGuiKey_Escape)){
-            glfwSetWindowShouldClose(window, GLFW_TRUE);  // Demande la fermeture de la fenêtre
-        }
-
-        if(ImGui::IsKeyPressed(ImGuiKey_R)) {
+        // Gestion inputs
+        if (ImGui::IsKeyPressed(ImGuiKey_Escape)) glfwSetWindowShouldClose(window, true);
+        if (ImGui::IsKeyPressed(ImGuiKey_R)) {
             mainGrid.resetGrid();
             gameState.reset();
         }
 
-        // Obtenez la taille de la fenêtre principale
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
-        
-        // Créez une fenêtre transparente sans décoration pour couvrir toute la fenêtre principale
+        setup_interface();
+
+        // Fenêtre du jeu (maintenant dockée)
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        ImGui::Begin("MainWindow", nullptr, 
-            ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoBringToFrontOnFocus |
-            ImGuiWindowFlags_NoBackground |
-            ImGuiWindowFlags_NoResize
-        );
-
-
-        ImVec2 window_pos = ImGui::GetCursorScreenPos(); // Position absolue de la fenêtre
-        ImVec2 window_size = ImGui::GetContentRegionAvail();
-
-
-        mainGrid.setWindowSize(window_size.x, window_size.y);
         
-        // mainGrid.update(gameState, gameState.targetSubGridPath, window_pos);
+        ImGui::Begin("Game", nullptr 
+            ,ImGuiWindowFlags_None
+        );
+        
+        // Mise à jour jeu
+        ImVec2 window_pos = ImGui::GetCursorScreenPos();
+        ImVec2 window_size = ImGui::GetContentRegionAvail();
+        
+        mainGrid.setWindowSize(window_size.x, window_size.y);
         gameState.update(window_pos, mainGrid);
-
         mainGrid.getGridFromPath(gameState.targetSubGridPath).setShape(gameState.currentPlayer);
-
         mainGrid.draw(window_pos, gameState.targetSubGridPath);
-
 
         ImGui::End();
         ImGui::PopStyleVar();
 
+        // Fenêtre des options (dockée à droite)
+        ImGui::Begin("Options", nullptr);
+        {
+            ImGui::Text("Paramètres du jeu");
+            ImGui::Separator();
+            if (ImGui::Button("Réinitialiser")) {
+                mainGrid.resetGrid();
+                gameState.reset();
+            }
         
-        // --- Fenetre ImGui - End----------------------
+            ImGui::Separator();
+            ImGui::Text("Current player : %s", GridShapeToString(gameState.currentPlayer).c_str());
+        }
+        ImGui::End();
+
+        // Fin de la fenêtre de docking principale
+        ImGui::End();
 
         // Rendu
         ImGui::Render();
-        // // Efface l'écran avec une couleur de fond
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        // Dessine les données ImGui
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        // Échange les buffers (double buffering)
         glfwSwapBuffers(window);
     }
 
-    // 5. Nettoyage
+    // Nettoyage
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
     glfwDestroyWindow(window);
     glfwTerminate();
 
