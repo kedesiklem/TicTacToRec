@@ -1,8 +1,9 @@
 * DONE Base visuel fonctionel
 * DONE Recursion
 * DONE Calcule coup permis
-* TODO Ajouter UI pour diverses commandes
-* TODO Implémenter un retour arrière et un historique des coups joué
+* DONE Ajouter UI pour diverses commandes
+* DONE Implémenter un retour arrière et un historique des coups joué
+* TODO Améliorer l'UI
 * TODO Mode en reseau
 * TODO Coup aléatoire
 * TODO Afficher explicitement la fin de la partie

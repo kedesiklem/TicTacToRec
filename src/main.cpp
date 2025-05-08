@@ -63,6 +63,9 @@ int main() {
             mainGrid.resetGrid();
             gameState.reset();
         }
+        if (ImGui::IsKeyPressed(ImGuiKey_U)) {
+            gameState.undoLastMove(mainGrid);
+        }
 
         setup_interface();
 

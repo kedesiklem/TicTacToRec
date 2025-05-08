@@ -15,28 +15,15 @@ GridShape nextShapePlayable(GridShape shape){
             return shape;
     }
 }
+
 std::string GridShapeToString(GridShape shape){
-    switch (shape)
-    {
-    case GridShape::NONE :
-        return "None";
-        break;
-    
-    case GridShape::CROSS :
-        return "X";
-        break;
-    
-    case GridShape::CIRCLE :
-        return "O";
-        break;
-        
-    case GridShape::DRAW :
-        return "-";
-        break;
-    
-    default:
-        return "Undefined";
-        break;
+    switch (shape){
+        case GridShape::NONE : return "None";
+        case GridShape::CROSS : return "X";
+        case GridShape::CIRCLE : return "O";
+        case GridShape::DRAW : return "-";
+
+        default: return "Undefined";
     }
 }
 
@@ -52,12 +39,7 @@ bool starts_with(const std::vector<T>& vec, const std::vector<T>& prefix) {
 }
 
 std::ostream& operator<<(std::ostream& os, const GridShape& shape){
-    switch (shape) {
-        case GridShape::NONE: os << "NONE"; break;
-        case GridShape::CROSS: os << "CROSS"; break;
-        case GridShape::CIRCLE: os << "CIRCLE"; break;
-        case GridShape::DRAW: os << "DRAW"; break;
-    }
+    os << GridShapeToString(shape);
     return os;
 };
 

@@ -1,5 +1,42 @@
 #include "GameState.h"
 
+bool isGridLocked(Grid& grid) {
+    if (grid.isLockedShaped()) {
+        grid.setHovered(false);
+        return true;
+    }
+    return false;
+}
+
+bool isMouseOverGrid(const ImVec2& window_pos, const Grid& grid) {
+    ImVec2 mouse_pos = ImGui::GetMousePos();
+    size_t cellSize = grid.getCellSize();
+
+    return (mouse_pos.x >= window_pos.x && mouse_pos.x < window_pos.x + cellSize &&
+            mouse_pos.y >= window_pos.y && mouse_pos.y < window_pos.y + cellSize);
+}
+
+ImVec2 calculateSubGridPosition(const ImVec2& window_pos, const Grid& grid, int r, int c) {
+    size_t cellSize = grid.getCellSize();
+    size_t padding = grid.getPadding();
+
+    return ImVec2(
+        window_pos.x + c * (cellSize + padding),
+        window_pos.y + r * (cellSize + padding)
+    );
+}
+
+void checkAllVictories(Grid& grid) {
+    if (grid.isLeaf()) return;
+
+    for (int r = 0; r < grid.getRows(); ++r) {
+        for (int c = 0; c < grid.getCols(); ++c) {
+            checkAllVictories(grid.getSubGrid(r, c));
+        }
+    }
+    grid.setShape(grid.checkVictory());
+}
+
 
 // wrapper pour update
 bool GameState::update(const ImVec2& window_pos, Grid& grid){
@@ -8,72 +45,89 @@ bool GameState::update(const ImVec2& window_pos, Grid& grid){
     return update(window_pos, grid, currentPath, finalPath, 0);
 }
 
-bool GameState::update(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, std::vector<int>& finalPath, int recursionLevel){
-    ImVec2 mouse_pos = ImGui::GetMousePos();
-    bool mouse_left_clicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-
-    // Si locked, pas d'interaction
-    if(grid.isLockedShaped()){
-        grid.setHovered(false);
+bool GameState::update(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, 
+    std::vector<int>& finalPath, int recursionLevel) {
+    if (isGridLocked(grid)) {
         return false;
     }
 
-    size_t cellSize = grid.getCellSize();
-    size_t padding = grid.getPadding();
+    if (grid.isLeaf()) {
+        return handleLeafGrid(window_pos, grid, currentPath, finalPath);
+    }
 
-    if(grid.isLeaf()){
-        // Si on atteint une feuille : on est sur une cible
-        grid.setHovered(false);
-        if(mouse_pos.x >= window_pos.x && mouse_pos.x < window_pos.x + cellSize &&
-           mouse_pos.y >= window_pos.y && mouse_pos.y < window_pos.y + cellSize){
-            grid.setHovered(true);
+    return handleNonLeafGrid(window_pos, grid, currentPath, finalPath, recursionLevel);
+}
 
-            if(mouse_left_clicked && grid.getShape() == GridShape::NONE){
-                grid.setShape(currentPlayer);
-                finalPath = currentPath; // Sauvegarde le chemin complet
-                return true;
-            }
+bool GameState::handleLeafGrid(const ImVec2& window_pos, Grid& grid, 
+            std::vector<int>& currentPath, std::vector<int>& finalPath) {
+    grid.setHovered(false);
+
+    if (isMouseOverGrid(window_pos, grid) && grid.getShape() == GridShape::NONE) {
+        grid.setHovered(true);
+
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+            grid.setShape(currentPlayer);
+            finalPath = currentPath;
+            return true;
         }
-        return false;
     }
-    // Sinon on est pas sur une feuille : on iter sur toutes les sous-grilles en n'appelant que les cibles (ou toutes si pas de cible)
+    return false;
+}
+
+bool GameState::handleNonLeafGrid(const ImVec2& window_pos, Grid& grid, 
+               std::vector<int> currentPath, std::vector<int>& finalPath, 
+               int recursionLevel) {
     bool updated = false;
-    for(int r = 0; r < grid.getRows(); ++r){
-        for(int c = 0; c < grid.getCols(); ++c){
 
-            // Verifier si on est sur la case cible
-            if(!targetSubGridPath.empty() && recursionLevel < targetSubGridPath.size()){
-                int index = targetSubGridPath[recursionLevel];
-                int target_r = index / grid.getCols();
-                int target_c = index % grid.getCols();
-                if(r != target_r || c != target_c){
-                    continue; // On ne traite pas cette case
-                }
-            }
+    for (int r = 0; r < grid.getRows(); ++r) {
+        for (int c = 0; c < grid.getCols(); ++c) {
+            if (shouldSkipSubGrid(grid, r, c, recursionLevel))
+                continue;
 
-            float x = window_pos.x + c * (cellSize + padding);
-            float y = window_pos.y + r * (cellSize + padding);
-
-            // On ajoute la case courante au chemin
+            ImVec2 subGridPos = calculateSubGridPosition(window_pos, grid, r, c);
             currentPath.push_back(r * grid.getCols() + c);
-            if(update(ImVec2(x, y), grid.getSubGrid(r,c), currentPath, finalPath, recursionLevel + 1)){
-                grid.setShape(grid.checkVictory());
-                updated = true;
+
+            if (updateSubGrid(subGridPos, grid, r, c, currentPath, finalPath, recursionLevel)) {
+            grid.setShape(grid.checkVictory());
+            updated = true;
             }
+
             currentPath.pop_back();
         }
     }
 
-    if(recursionLevel == 0 && updated){
-        endTurn(finalPath, grid); // Utilise le chemin complet sauvegardé
+    if (recursionLevel == 0 && updated) {
+        endTurn(finalPath, grid);
     }
 
     return updated;
 }
 
-void GameState::endTurn(const std::vector<int>& lastPlayedSubGridPath, Grid& grid) {
+bool GameState::shouldSkipSubGrid(const Grid& grid, int r, int c, int recursionLevel) const {
+    if (targetSubGridPath.empty() || recursionLevel >= targetSubGridPath.size()) {
+        return false;
+    }
+
+    int index = targetSubGridPath[recursionLevel];
+    int target_r = index / grid.getCols();
+    int target_c = index % grid.getCols();
+
+    return (r != target_r || c != target_c);
+}
+
+bool GameState::updateSubGrid(const ImVec2& pos, Grid& grid, int r, int c, 
+           std::vector<int>& currentPath, std::vector<int>& finalPath, 
+           int recursionLevel) {
+    return update(pos, grid.getSubGrid(r, c), currentPath, finalPath, recursionLevel + 1);
+}
+
+void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, Grid& grid) {
     // Changement de joueur
+    moveHistory.push_back({lastPlayedSubGridPath, targetSubGridPath, currentPlayer});
     currentPlayer = nextShapePlayable(currentPlayer);
+
+    // std::cout << *this << std::endl;
+
 
     if (lastPlayedSubGridPath.empty()) {
         targetSubGridPath.clear();
@@ -96,6 +150,43 @@ void GameState::endTurn(const std::vector<int>& lastPlayedSubGridPath, Grid& gri
     }
 }
 
+bool GameState::undoLastMove(Grid& rootGrid) {
+    if (moveHistory.empty()) return false;
+
+    Move lastMove = moveHistory.back();
+    moveHistory.pop_back();
+
+    targetSubGridPath = lastMove.previousTarget;
+    currentPlayer = lastMove.previousShape;
+
+    // Parcourir la grille selon le chemin pour trouver la cellule à annuler
+    Grid* currentGrid = &rootGrid;
+    for (size_t i = 0; i < lastMove.path.size(); ++i) {
+        int index = lastMove.path[i];
+        int rows = currentGrid->getRows();
+        int cols = currentGrid->getCols();
+        int r = index / cols;
+        int c = index % cols;
+        
+        if (i == lastMove.path.size() - 1) {
+            // Dernière étape du chemin - restaurer la forme
+            currentGrid->getSubGrid(r, c).setShape(GridShape::NONE);
+        } else {
+            currentGrid = &currentGrid->getSubGrid(r, c);
+        }
+    }
+
+    // Re-vérifier les victoires si nécessaire
+    checkAllVictories(rootGrid);
+    
+    return true;
+}
+
+std::ostream& operator<<(std::ostream& os, const Move& move){
+    os << move.previousShape << " ";
+    os << move.path[1] << "," << move.path[0];
+}
+
 std::ostream& operator<<(std::ostream& os, const GameState& gameState){
   os << "GameState: " << std::endl;
   os << "Current Player: " << gameState.currentPlayer << std::endl;
@@ -104,5 +195,10 @@ std::ostream& operator<<(std::ostream& os, const GameState& gameState){
     os << path << " ";
   }
   os << std::endl;
+
+  os << "[Move History][" << gameState.moveHistory.size() << "]" << std::endl;
+  for (const auto& move : gameState.moveHistory) {
+    os << "    " << move << " " << std::endl;;
+  }
   return os;
 }

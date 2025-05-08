@@ -1,4 +1,4 @@
-# Cross Platform Makefile - Version simplifiée
+# Cross Platform Makefile
 
 # Configuration de base
 SRC_DIR := src
@@ -22,7 +22,7 @@ OBJS := $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 # Flags de compilation
 CXX ?= g++
 CXXFLAGS := -std=c++17 -I$(SRC_DIR) -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends -I$(TTT_DIR) -I$(OTHER_DIR)
-CXXFLAGS += -g -Wall -Wformat
+CXXFLAGS += -g -Wall -Wformat -MMD -MP
 
 # Détection de la plateforme
 UNAME_S := $(shell uname -s)
@@ -48,8 +48,12 @@ $(EXE): $(OBJS)
 
 # Règle générique pour la compilation
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(dir $@)  # Utilisation de dir pour créer toute l'arborescence
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Inclure les dépendances
+DEP_FILES := $(OBJS:.o=.d)
+-include $(DEP_FILES)
 
 # Nettoyage
 clean:
