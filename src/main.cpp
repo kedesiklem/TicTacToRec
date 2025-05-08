@@ -110,21 +110,41 @@ int main() {
             str.str("");
 
 
-            ImGui::Separator();
+            ImGui::Separator();        
+            // Créer 2 colonnes
+            ImGui::Columns(2, "historyColumns", false);  // false = pas de bordure
+
+            ImGui::Text("[History]");
+            ImGui::NextColumn();
+            ImGui::Text("[Redo]");
+            ImGui::NextColumn();
             size_t max_size = std::max(gameState.moveHistory.size(), gameState.redoHistory.size());
-           
-            // Oui je sais, c'est à l'arrache mais ça fait le job
+
             for (size_t i = 0; i < max_size; ++i) {
-                if (i < gameState.moveHistory.size())
+                // Colonne 1: historique des coups
+                if (i < gameState.moveHistory.size()) {
                     str << gameState.moveHistory[i];
-                else str << "\t\t";
-                str << "\t\t";
-                if (i < gameState.redoHistory.size())
+                    ImGui::Text("%s", str.str().c_str());
+                    str.str("");
+                } else {
+                    ImGui::Text(" ");
+                }
+                
+                ImGui::NextColumn();
+
+                // Colonne 2: historique des redo
+                if (i < gameState.redoHistory.size()) {
                     str << gameState.redoHistory[i];
-                str << "\n";
+                    ImGui::Text("%s", str.str().c_str());
+                    str.str("");
+                } else {
+                    ImGui::Text(" ");
+                }
+                
+                ImGui::NextColumn();
             }
-            ImGui::Text("[History] [Redo] \n%s", str.str().c_str());
-            str.str("");
+
+            ImGui::Columns(1);  // Réinitialiser à une seule colonne
         }
         ImGui::End();
 
