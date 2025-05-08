@@ -45,6 +45,7 @@ int main() {
     // Initialisation jeu
     Grid mainGrid(GRID_SIZE, GRID_SIZE, GRID_REC, 150.f, 20.f);
     GameState gameState;
+    std::stringstream str;
 
     LoadFonts(io, 40);
 
@@ -65,6 +66,10 @@ int main() {
         }
         if (ImGui::IsKeyPressed(ImGuiKey_U)) {
             gameState.undoLastMove(mainGrid);
+        }
+
+        if (ImGui::IsKeyPressed(ImGuiKey_I)) {
+            gameState.redoLastMove(mainGrid);
         }
 
         setup_interface();
@@ -99,7 +104,27 @@ int main() {
             }
         
             ImGui::Separator();
-            ImGui::Text("Current player : %s", GridShapeToString(gameState.currentPlayer).c_str());
+
+            str << gameState.currentPlayer;
+            ImGui::Text("Current player : %s", str.str().c_str());
+            str.str("");
+
+
+            ImGui::Separator();
+            size_t max_size = std::max(gameState.moveHistory.size(), gameState.redoHistory.size());
+           
+            // Oui je sais, c'est à l'arrache mais ça fait le job
+            for (size_t i = 0; i < max_size; ++i) {
+                if (i < gameState.moveHistory.size())
+                    str << gameState.moveHistory[i];
+                else str << "\t\t";
+                str << "\t\t";
+                if (i < gameState.redoHistory.size())
+                    str << gameState.redoHistory[i];
+                str << "\n";
+            }
+            ImGui::Text("[History] [Redo] \n%s", str.str().c_str());
+            str.str("");
         }
         ImGui::End();
 

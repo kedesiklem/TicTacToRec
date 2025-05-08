@@ -7,6 +7,7 @@
 - Grilles de jeu récursives (grilles dans les cases)
 - Support de profondeur paramétrable
 - Mécanisme de victoire hiérarchique
+- Historique des coups [Undo/Redo]
 - IA de base (à venir)
 
 ## Dependance & Prérequis
@@ -18,16 +19,20 @@ git submodule update --init --recursive
 ```
 
 Assurez-vous d'avoir installé :
+
 - **g++** (compilateur C++)
 - **GLFW** et **OpenGL** (bibliothèques graphiques)
 
 ### Installation rapide (Linux) :
+
 ```bash
 sudo apt install g++ libglfw3 libglfw3-dev libglu1-mesa-dev  # Ubuntu/Debian
 ```
+
 ```bash
 sudo dnf install gcc-c++ glfw glfw-devel mesa-libGLU-devel    # Fedora
 ```
+
 ```bash
 sudo pacman -S gcc glfw-x11 glu                               # Arch
 ```
@@ -50,19 +55,20 @@ Sinon, va falloir mettre les mains dans la tambouille.
 
 ### Raccourci
 
-| Touche    | Command                       |
-|-          |-                              |
-| `U`       | Undo                          |
-| `R`       | Reset Game                    |
-| `Esc`     | Quit                          |
+| Touche | Command    |
+| ------ | ---------- |
+| `U`    | Undo       |
+| `I`    | Redo       |
+| `R`    | Reset Game |
+| `Esc`  | Quit       |
 
 ## Fichiers
 
 - `src/` : Code source.
-    - `main.cpp` : Point d'entrée, logique principale.
-    - `TTT/` : Backend.
-    - `utils` : Divers
-    - `external/imgui/` : Dépendances de l'IHM.
+  - `main.cpp` : Point d'entrée, logique principale.
+  - `TTT/` : Backend.
+  - `utils` : Divers
+  - `external/imgui/` : Dépendances de l'IHM.
 - `Makefile` : Compilation
 - `TODO.org` : Tâches restantes (org-mode).
 - `README.md` : Documentation (Vous êtes ici).

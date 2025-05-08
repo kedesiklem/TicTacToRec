@@ -16,17 +16,6 @@ GridShape nextShapePlayable(GridShape shape){
     }
 }
 
-std::string GridShapeToString(GridShape shape){
-    switch (shape){
-        case GridShape::NONE : return "None";
-        case GridShape::CROSS : return "X";
-        case GridShape::CIRCLE : return "O";
-        case GridShape::DRAW : return "-";
-
-        default: return "Undefined";
-    }
-}
-
 template <typename T>
 bool starts_with(const std::vector<T>& vec, const std::vector<T>& prefix) {
     // Si le préfixe est plus grand que le vecteur, il ne peut pas être au début
@@ -38,8 +27,15 @@ bool starts_with(const std::vector<T>& vec, const std::vector<T>& prefix) {
     return std::equal(prefix.begin(), prefix.end(), vec.begin());
 }
 
-std::ostream& operator<<(std::ostream& os, const GridShape& shape){
-    os << GridShapeToString(shape);
+std::ostream& operator<<(std::ostream& os, const GridShape& shape){ 
+    switch (shape){
+        case GridShape::NONE   :    os << "None"; break;
+        case GridShape::CROSS  :    os << "X";    break;
+        case GridShape::CIRCLE :    os << "O";    break;
+        case GridShape::DRAW   :    os << "-";    break;
+
+        default: os << "Undefined"; break;
+    }
     return os;
 };
 
@@ -125,9 +121,6 @@ void Grid::drawShape(ImDrawList* draw_list, const ImVec2& start, const ImVec2& e
         
     case GridShape::CIRCLE:
         drawCircle(draw_list, start, end, width, circle_color);
-        break;
-        
-    case GridShape::DRAW:
         break;
         
     case GridShape::NONE:

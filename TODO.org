@@ -3,6 +3,7 @@
 * DONE Calcule coup permis
 * DONE Ajouter UI pour diverses commandes
 * DONE Implémenter un retour arrière et un historique des coups joué
+* DONE Jouer un coup programmatiquement
 * TODO Améliorer l'UI
 * TODO Mode en reseau
 * TODO Coup aléatoire

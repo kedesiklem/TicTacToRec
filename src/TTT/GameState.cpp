@@ -1,5 +1,10 @@
 #include "GameState.h"
 
+
+GridShape defaultPlayer(){
+    return GridShape::CROSS;
+}
+
 bool isGridLocked(Grid& grid) {
     if (grid.isLockedShaped()) {
         grid.setHovered(false);
@@ -42,7 +47,11 @@ void checkAllVictories(Grid& grid) {
 bool GameState::update(const ImVec2& window_pos, Grid& grid){
     std::vector<int> currentPath = {};
     std::vector<int> finalPath = {};
-    return update(window_pos, grid, currentPath, finalPath, 0);
+    bool result = update(window_pos, grid, currentPath, finalPath, 0);
+    if(result){
+        redoHistory.clear();
+    }
+    return result;
 }
 
 bool GameState::update(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, 
@@ -126,8 +135,6 @@ void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, Grid& grid
     moveHistory.push_back({lastPlayedSubGridPath, targetSubGridPath, currentPlayer});
     currentPlayer = nextShapePlayable(currentPlayer);
 
-    // std::cout << *this << std::endl;
-
 
     if (lastPlayedSubGridPath.empty()) {
         targetSubGridPath.clear();
@@ -150,14 +157,23 @@ void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, Grid& grid
     }
 }
 
+void GameState::reset() {
+    currentPlayer = defaultPlayer();
+    targetSubGridPath.clear();
+    moveHistory.clear();
+    redoHistory.clear();
+}
+
 bool GameState::undoLastMove(Grid& rootGrid) {
     if (moveHistory.empty()) return false;
 
     Move lastMove = moveHistory.back();
+
+    redoHistory.push_back(lastMove);
     moveHistory.pop_back();
 
-    targetSubGridPath = lastMove.previousTarget;
-    currentPlayer = lastMove.previousShape;
+    targetSubGridPath = lastMove.target;
+    currentPlayer = lastMove.shape;
 
     // Parcourir la grille selon le chemin pour trouver la cellule à annuler
     Grid* currentGrid = &rootGrid;
@@ -182,23 +198,79 @@ bool GameState::undoLastMove(Grid& rootGrid) {
     return true;
 }
 
+bool GameState::redoLastMove(Grid& rootGrid) {
+    if (redoHistory.empty()) return false;
+
+    Move redoMove = redoHistory.back();
+    redoHistory.pop_back();
+
+    targetSubGridPath = redoMove.target;
+    currentPlayer = redoMove.shape;
+
+    playMove(redoMove.path, redoMove.shape, rootGrid);
+}
+
+
+bool GameState::playMove(const std::vector<int>& path, GridShape player, Grid& rootGrid) {
+
+    if (path.empty()) {
+        return false;
+    }
+
+    Grid* targetGrid = &rootGrid;
+    for (size_t i = 0; i < path.size(); ++i) {
+        int index = path[i];
+        int rows = targetGrid->getRows();
+        int cols = targetGrid->getCols();
+        
+        if (index < 0 || index >= rows * cols) {
+            return false;
+        }
+
+        int r = index / cols;
+        int c = index % cols;
+
+        if (i == path.size() - 1) {
+            if (targetGrid->getSubGrid(r, c).getShape() != GridShape::NONE || 
+                targetGrid->getSubGrid(r, c).isLockedShaped()) {
+                return false;
+            }
+
+            targetGrid->getSubGrid(r, c).setShape(player);
+            
+            endTurn(path, rootGrid);
+            
+            return true;
+        } else {
+            targetGrid = &targetGrid->getSubGrid(r, c);
+        }
+    }
+
+    return false;
+}
+
+
 std::ostream& operator<<(std::ostream& os, const Move& move){
-    os << move.previousShape << " ";
+    os << move.shape << " ";
     os << move.path[1] << "," << move.path[0];
 }
 
-std::ostream& operator<<(std::ostream& os, const GameState& gameState){
-  os << "GameState: " << std::endl;
-  os << "Current Player: " << gameState.currentPlayer << std::endl;
-  os << "Target SubGrid Path: ";
-  for (const auto& path : gameState.targetSubGridPath) {
-    os << path << " ";
-  }
-  os << std::endl;
+std::ostream &operator<<(std::ostream &os, const GameState &gameState)
+{
+    os << "GameState: " << std::endl;
+    os << "Current Player: " << gameState.currentPlayer << std::endl;
+    os << "Target SubGrid Path: ";
+    for (const auto &path : gameState.targetSubGridPath)
+    {
+        os << path << " ";
+    }
+    os << std::endl;
 
-  os << "[Move History][" << gameState.moveHistory.size() << "]" << std::endl;
-  for (const auto& move : gameState.moveHistory) {
-    os << "    " << move << " " << std::endl;;
-  }
-  return os;
+    os << "[Move History][" << gameState.moveHistory.size() << "]" << std::endl;
+    for (const auto &move : gameState.moveHistory)
+    {
+        os << "    " << move << " " << std::endl;
+        ;
+    }
+    return os;
 }
