@@ -52,14 +52,16 @@ Sinon, va falloir mettre les mains dans la tambouille.
 
 | Touche    | Command                       |
 |-          |-                              |
-| `R`       | Reset de la partie            |
-| `Esc`     | Quit l'application            |
+| `U`       | Undo                          |
+| `R`       | Reset Game                    |
+| `Esc`     | Quit                          |
 
 ## Fichiers
 
 - `src/` : Code source.
     - `main.cpp` : Point d'entrée, logique principale.
     - `TTT/` : Backend.
+    - `utils` : Divers
     - `external/imgui/` : Dépendances de l'IHM.
 - `Makefile` : Compilation
 - `TODO.org` : Tâches restantes (org-mode).
