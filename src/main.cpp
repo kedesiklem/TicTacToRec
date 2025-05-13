@@ -1,13 +1,13 @@
 #include <config.h>
 #include <iostream>
 #include <setup_interface.h>
-#include <shortcut_editor.h>
-#include <GameState.h>
+#include <setup_shortcut.h>
 
 #define GRID_SIZE 3
 #define GRID_REC 1
 
 int main() {
+
     // Initialisation GLFW
     if (!glfwInit()) {
         std::cerr << "Échec de l'initialisation GLFW" << std::endl;
@@ -49,6 +49,10 @@ int main() {
 
     LoadFonts(io, 40);
 
+    ShortcutManager shortcutManager;
+
+    setupShortcuts(shortcutManager, window, mainGrid, gameState);
+
     // Boucle principale
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -58,20 +62,6 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Gestion inputs
-        if (ImGui::IsKeyPressed(ImGuiKey_Escape)) glfwSetWindowShouldClose(window, true);
-        if (ImGui::IsKeyPressed(ImGuiKey_R)) {
-            mainGrid.resetGrid();
-            gameState.reset();
-        }
-        if (ImGui::IsKeyPressed(ImGuiKey_U)) {
-            gameState.undoLastMove(mainGrid);
-        }
-
-        if (ImGui::IsKeyPressed(ImGuiKey_I)) {
-            gameState.redoLastMove(mainGrid);
-        }
-
         setup_interface();
 
         // Fenêtre du jeu (maintenant dockée)
@@ -80,8 +70,12 @@ int main() {
         ImGui::Begin("Game", nullptr 
             ,ImGuiWindowFlags_None
         );
+
         
         // Mise à jour jeu
+
+        shortcutManager.update();
+
         ImVec2 window_pos = ImGui::GetCursorScreenPos();
         ImVec2 window_size = ImGui::GetContentRegionAvail();
         

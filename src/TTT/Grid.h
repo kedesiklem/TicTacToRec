@@ -86,7 +86,11 @@ class Grid {
         void drawShape(ImDrawList* draw_list, const ImVec2& start, const ImVec2& end, 
             float width = 2.0f, ImU32 cross_color = IM_COL32(255, 0, 0, 255), 
             ImU32 circle_color = IM_COL32(50, 50, 255, 255));
-};
+
+        std::vector<std::vector<int>> getValidMoves(const std::vector<int>& currentPath, const std::vector<int>& targetPath) const;
+        std::vector<std::vector<int>> getValidMoves(const std::vector<int>& targetPath) const;
+
+        };
 
 
 #endif // GRID_H

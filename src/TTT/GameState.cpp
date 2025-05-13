@@ -42,7 +42,6 @@ void checkAllVictories(Grid& grid) {
     grid.setShape(grid.checkVictory());
 }
 
-
 // wrapper pour update
 bool GameState::update(const ImVec2& window_pos, Grid& grid){
     std::vector<int> currentPath = {};
@@ -192,7 +191,6 @@ bool GameState::undoLastMove(Grid& rootGrid) {
         }
     }
 
-    // Re-vérifier les victoires si nécessaire
     checkAllVictories(rootGrid);
     
     return true;
@@ -210,7 +208,7 @@ bool GameState::redoLastMove(Grid& rootGrid) {
     playMove(redoMove.path, redoMove.shape, rootGrid);
 }
 
-
+//Duplication par rapport à update
 bool GameState::playMove(const std::vector<int>& path, GridShape player, Grid& rootGrid) {
 
     if (path.empty()) {
@@ -239,6 +237,8 @@ bool GameState::playMove(const std::vector<int>& path, GridShape player, Grid& r
             targetGrid->getSubGrid(r, c).setShape(player);
             
             endTurn(path, rootGrid);
+
+            checkAllVictories(rootGrid);
             
             return true;
         } else {
@@ -249,10 +249,16 @@ bool GameState::playMove(const std::vector<int>& path, GridShape player, Grid& r
     return false;
 }
 
-
 std::ostream& operator<<(std::ostream& os, const Move& move){
     os << move.shape << " ";
-    os << move.path[1] << "," << move.path[0];
+    for(size_t i=0; i<move.path.size() - 1; ++i){
+        os << move.path[i] << ",";
+    }
+    if(move.path.size() > 0){
+        os << move.path[move.path.size() - 1];
+    }
+
+    return os;
 }
 
 std::ostream &operator<<(std::ostream &os, const GameState &gameState)

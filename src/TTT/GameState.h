@@ -27,6 +27,7 @@ class GameState {
         bool updateSubGrid(const ImVec2 &pos, Grid &grid, int r, int c, std::vector<int> &currentPath, std::vector<int> &finalPath, int recursionLevel);
         void endTurn(const std::vector<int> lastPlayedSubGridPath, Grid &grid);
         bool playMove(const std::vector<int>& path, GridShape player, Grid& rootGrid);
+        bool playMoveRecursive(const std::vector<int>& path, GridShape player, Grid& currentGrid, Grid& rootGrid, size_t currentIndex);
 
         bool undoLastMove(Grid &rootGrid);
         bool redoLastMove(Grid& rootGrid);

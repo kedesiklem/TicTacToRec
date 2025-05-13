@@ -6,6 +6,8 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h>
 #include <algorithm>
+#include <stdexcept>
+#include <fstream>
 
 namespace{
     float getMinSideScreen(){
@@ -24,9 +26,21 @@ namespace{
     }
 
     void LoadFonts(ImGuiIO& io, float fontSize) {
+        const char* fontPath = ""; // MonoSpace si possible
         io.Fonts->Clear();
-        io.Fonts->AddFontFromFileTTF("src/external/imgui/misc/fonts/DroidSans.ttf", fontSize);
-        ImGui_ImplOpenGL3_CreateFontsTexture();
+        ImFont* font = nullptr;
+        try {
+            std::ifstream test(fontPath);
+            if (!test) throw std::runtime_error("Font loading failed");
+            io.Fonts->AddFontFromFileTTF(fontPath, fontSize);
+        } catch (...) {
+            ImFontConfig cfg;
+            cfg.SizePixels = fontSize;  // Ici on applique la taille désirée
+            font = io.Fonts->AddFontDefault(&cfg);        
+        }
+        io.FontDefault = font;
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        ImGui_ImplOpenGL3_CreateFontsTexture();    
     }
 
     void initDarkStyle(){
