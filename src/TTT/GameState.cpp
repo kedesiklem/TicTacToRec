@@ -208,6 +208,211 @@ bool GameState::redoLastMove(Grid& rootGrid) {
     playMove(redoMove.path, redoMove.shape, rootGrid);
 }
 
+bool GameState::saveState(const std::string& filename) const {
+    std::ofstream outFile(filename);
+    if (!outFile.is_open()) {
+        return false;
+    }
+
+    try {
+        // En-tête avec version
+        outFile << "# Ultimate Tic-Tac-Toe Game State\n";
+
+        // Current player
+        outFile << "[CurrentPlayer]\n";
+        outFile << GridShapeToString(currentPlayer) << "\n\n";
+
+        // Target subgrid path
+        outFile << "[TargetSubGrid]\n";
+        if (targetSubGridPath.empty()) {
+            outFile << "none\n";
+        } else {
+            for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
+                if (i > 0) outFile << ".";
+                outFile << targetSubGridPath[i];
+            }
+            outFile << "\n\n";
+        }
+
+        // Move history
+        outFile << "[MoveHistory]\n";
+        outFile << "# Format: PATH>SHAPE@TARGET (SHAPE uses enum names)\n";
+        for (const auto& move : moveHistory) {
+            // Path
+            if (move.path.empty()) {
+                outFile << "root";
+            } else {
+                for (size_t i = 0; i < move.path.size(); ++i) {
+                    if (i > 0) outFile << ".";
+                    outFile << move.path[i];
+                }
+            }
+
+            // Shape (utilise le nom de l'enum)
+            outFile << ">" << GridShapeToString(move.shape);
+
+            // Target
+            if (!move.target.empty()) {
+                outFile << "@";
+                for (size_t i = 0; i < move.target.size(); ++i) {
+                    if (i > 0) outFile << ".";
+                    outFile << move.target[i];
+                }
+            }
+            outFile << "\n";
+        }
+        outFile << "\n";
+
+        // Redo history
+        outFile << "[RedoHistory]\n";
+        for (const auto& move : redoHistory) {
+            if (move.path.empty()) {
+                outFile << "root";
+            } else {
+                for (size_t i = 0; i < move.path.size(); ++i) {
+                    if (i > 0) outFile << ".";
+                    outFile << move.path[i];
+                }
+            }
+            outFile << ">" << GridShapeToString(move.shape);
+            if (!move.target.empty()) {
+                outFile << "@";
+                for (size_t i = 0; i < move.target.size(); ++i) {
+                    if (i > 0) outFile << ".";
+                    outFile << move.target[i];
+                }
+            }
+            outFile << "\n";
+        }
+
+        return outFile.good();
+    } catch (...) {
+        return false;
+    }
+}
+
+bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
+    std::ifstream inFile(filename);
+    if (!inFile.is_open()) {
+        return false;
+    }
+
+    // Reset game state and grid
+    reset();
+    rootGrid.resetGrid();
+
+    std::string line;
+    std::string section;
+    bool success = true;
+
+    try {
+        while (std::getline(inFile, line)) {
+            // Skip comments and empty lines
+            if (line.empty() || line[0] == '#') {
+                continue;
+            }
+
+            // Check for section headers
+            if (line[0] == '[' && line.back() == ']') {
+                section = line.substr(1, line.size() - 2);
+                continue;
+            }
+
+            if (section == "CurrentPlayer") {
+                currentPlayer = StringToGridShape(line);
+            }
+            else if (section == "TargetSubGrid") {
+                if (line != "none") {
+                    targetSubGridPath.clear();
+                    std::istringstream iss(line);
+                    std::string token;
+                    while (std::getline(iss, token, '.')) {
+                        targetSubGridPath.push_back(std::stoi(token));
+                    }
+                }
+            }
+            else if (section == "MoveHistory") {
+                // Format: PATH>SHAPE@TARGET or PATH>SHAPE
+                size_t shapePos = line.find('>');
+                if (shapePos == std::string::npos) continue;
+
+                std::string pathStr = line.substr(0, shapePos);
+                std::string rest = line.substr(shapePos + 1);
+                
+                // Parse shape
+                size_t targetPos = rest.find('@');
+                GridShape shape = StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
+                
+                // Parse path
+                std::vector<int> path;
+                if (pathStr != "root") {
+                    std::istringstream pathIss(pathStr);
+                    std::string token;
+                    while (std::getline(pathIss, token, '.')) {
+                        path.push_back(std::stoi(token));
+                    }
+                }
+
+                // Parse target if exists
+                std::vector<int> target;
+                if (targetPos != std::string::npos) {
+                    std::string targetStr = rest.substr(targetPos + 1);
+                    std::istringstream targetIss(targetStr);
+                    std::string token;
+                    while (std::getline(targetIss, token, '.')) {
+                        target.push_back(std::stoi(token));
+                    }
+                }
+
+                // Play the move
+                if (!playMove(path, shape, rootGrid)) {
+                    success = false;
+                }
+            }
+            else if (section == "RedoHistory") {
+                // Same format as MoveHistory
+                size_t shapePos = line.find('>');
+                if (shapePos == std::string::npos) continue;
+
+                std::string pathStr = line.substr(0, shapePos);
+                std::string rest = line.substr(shapePos + 1);
+                
+                // Parse shape
+                size_t targetPos = rest.find('@');
+                GridShape shape = StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
+                
+                // Parse path
+                std::vector<int> path;
+                if (pathStr != "root") {
+                    std::istringstream pathIss(pathStr);
+                    std::string token;
+                    while (std::getline(pathIss, token, '.')) {
+                        path.push_back(std::stoi(token));
+                    }
+                }
+
+                // Parse target if exists
+                std::vector<int> target;
+                if (targetPos != std::string::npos) {
+                    std::string targetStr = rest.substr(targetPos + 1);
+                    std::istringstream targetIss(targetStr);
+                    std::string token;
+                    while (std::getline(targetIss, token, '.')) {
+                        target.push_back(std::stoi(token));
+                    }
+                }
+
+                // Store in redo history
+                redoHistory.push_back({path, target, shape});
+            }
+        }
+    } catch (...) {
+        success = false;
+    }
+
+    return success && inFile.eof();
+}
+
 //Duplication par rapport à update
 bool GameState::playMove(const std::vector<int>& path, GridShape player, Grid& rootGrid) {
 

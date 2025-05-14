@@ -2,6 +2,9 @@
 #define GAMESTATE_H
 
 #include "Grid.h"
+#include <fstream>
+#include <sstream>
+#include <iomanip>
 
 struct Move {
     std::vector<int> path;
@@ -27,7 +30,8 @@ class GameState {
         bool updateSubGrid(const ImVec2 &pos, Grid &grid, int r, int c, std::vector<int> &currentPath, std::vector<int> &finalPath, int recursionLevel);
         void endTurn(const std::vector<int> lastPlayedSubGridPath, Grid &grid);
         bool playMove(const std::vector<int>& path, GridShape player, Grid& rootGrid);
-        bool playMoveRecursive(const std::vector<int>& path, GridShape player, Grid& currentGrid, Grid& rootGrid, size_t currentIndex);
+        bool saveState(const std::string& filename) const;
+        bool loadState(const std::string& filename, Grid& rootGrid);
 
         bool undoLastMove(Grid &rootGrid);
         bool redoLastMove(Grid& rootGrid);

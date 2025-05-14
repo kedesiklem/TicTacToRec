@@ -9,6 +9,8 @@
 #include <emacsStyleShortCut.hpp>
 #include <GameState.h>
 
+#define SAVE_STATE "save_state.ttt"
+
 // D'abord, créons les classes Functor pour chaque action
 
 class CloseWindowFunctor : public Functor {
@@ -18,42 +20,42 @@ public:
     void exec() override { glfwSetWindowShouldClose(window, true); }
 };
 
-class ResetGameFunctor : public Functor {
+class GameFunctor : public Functor{
+protected:
     Grid& mainGrid;
     GameState& gameState;
 public:
-    ResetGameFunctor(Grid& grid, GameState& state) : mainGrid(grid), gameState(state) {}
+    GameFunctor(Grid& grid, GameState& state) : mainGrid(grid), gameState(state) {}
+};
+
+class ResetGameFunctor : public GameFunctor {
+public:
+    using GameFunctor::GameFunctor;
     void exec() override { 
         mainGrid.resetGrid();
         gameState.reset();
     }
 };
 
-class UndoMoveFunctor : public Functor {
-    Grid& mainGrid;
-    GameState& gameState;
+class UndoMoveFunctor : public GameFunctor {
 public:
-    UndoMoveFunctor(Grid& grid, GameState& state) : mainGrid(grid), gameState(state) {}
+    using GameFunctor::GameFunctor;
     void exec() override { 
         gameState.undoLastMove(mainGrid);
     }
 };
 
-class RedoMoveFunctor : public Functor {
-    Grid& mainGrid;
-    GameState& gameState;
+class RedoMoveFunctor : public GameFunctor {
 public:
-    RedoMoveFunctor(Grid& grid, GameState& state) : mainGrid(grid), gameState(state) {}
+    using GameFunctor::GameFunctor;
     void exec() override { 
         gameState.redoLastMove(mainGrid);
     }
 };
 
-class PrintValidMovesFunctor : public Functor {
-    Grid& mainGrid;
-    GameState& gameState;
+class PrintValidMovesFunctor : public GameFunctor {
 public:
-    PrintValidMovesFunctor(Grid& grid, GameState& state) : mainGrid(grid), gameState(state) {}
+    using GameFunctor::GameFunctor;
     void exec() override { 
         std::cout << "Valid Moves" << std::endl;
         auto validMove = mainGrid.getValidMoves(gameState.targetSubGridPath);
@@ -69,6 +71,20 @@ public:
     }
 };
 
+class SaveStateFunctor : public GameFunctor{
+public :
+    using GameFunctor::GameFunctor;
+    void exec() override { 
+        gameState.saveState(SAVE_STATE);
+    }
+};
+
+class LoadStateFunctor : public GameFunctor{
+    using GameFunctor::GameFunctor;
+    void exec() override { 
+        gameState.loadState(SAVE_STATE, mainGrid);
+    }
+};
 
 void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, Grid& mainGrid, GameState& gameState) {
     // Escape pour fermer la fenêtre
@@ -78,6 +94,7 @@ void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, Grid& 
     // Ctrl-X Ctrl-X pour réinitialiser le jeu
     shortcutManager.addShortcut({{ImGuiKey_X, true}, {ImGuiKey_X, true}}, 
         new ResetGameFunctor(mainGrid, gameState), "Réinitialiser le jeu");
+
 
     // Ctrl-Z pour annuler le dernier mouvement
     shortcutManager.addShortcut({{ImGuiKey_Z, true}}, 
@@ -90,4 +107,10 @@ void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, Grid& 
     // P pour afficher les mouvements valides
     shortcutManager.addShortcut({{ImGuiKey_P}}, 
         new PrintValidMovesFunctor(mainGrid, gameState), "Afficher les mouvements valides");
+    
+    shortcutManager.addShortcut({{ImGuiKey_S, true}, {ImGuiKey_S, true}}, 
+        new SaveStateFunctor(mainGrid, gameState), "Afficher les mouvements valides");
+
+    shortcutManager.addShortcut({{ImGuiKey_S, true, false, true}, {ImGuiKey_S, true, false, true}}, 
+        new LoadStateFunctor(mainGrid, gameState), "Afficher les mouvements valides");
 }

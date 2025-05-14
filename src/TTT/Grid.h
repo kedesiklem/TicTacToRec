@@ -16,7 +16,10 @@ enum class GridShape {
 };
 
 GridShape nextShapePlayable(GridShape shape);
+
 std::string GridShapeToString(GridShape shape);
+
+GridShape StringToGridShape(const std::string& str);
 
 std::ostream& operator<<(std::ostream& os, const GridShape& shape);
 

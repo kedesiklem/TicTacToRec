@@ -39,6 +39,24 @@ std::ostream& operator<<(std::ostream& os, const GridShape& shape){
     return os;
 };
 
+std::string GridShapeToString(GridShape shape) {
+    switch(shape) {
+        case GridShape::NONE: return "NONE";
+        case GridShape::CROSS: return "CROSS";
+        case GridShape::CIRCLE: return "CIRCLE";
+        case GridShape::DRAW: return "DRAW";
+        default: return "UNKNOWN";
+    }
+}
+
+GridShape StringToGridShape(const std::string& str) {
+    if (str == "NONE") return GridShape::NONE;
+    if (str == "CROSS") return GridShape::CROSS;
+    if (str == "CIRCLE") return GridShape::CIRCLE;
+    if (str == "DRAW") return GridShape::DRAW;
+    return GridShape::NONE; // Valeur par défaut
+}
+
 Grid Grid::getGridFromPath(const std::vector<int>& path) {
     Grid* grid = this;
     for (int index : path) {
