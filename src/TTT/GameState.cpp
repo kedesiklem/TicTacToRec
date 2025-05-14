@@ -218,10 +218,6 @@ bool GameState::saveState(const std::string& filename) const {
         // En-tête avec version
         outFile << "# Ultimate Tic-Tac-Toe Game State\n";
 
-        // Current player
-        outFile << "[CurrentPlayer]\n";
-        outFile << GridShapeToString(currentPlayer) << "\n\n";
-
         // Target subgrid path
         outFile << "[TargetSubGrid]\n";
         if (targetSubGridPath.empty()) {
@@ -318,10 +314,7 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
                 continue;
             }
 
-            if (section == "CurrentPlayer") {
-                currentPlayer = StringToGridShape(line);
-            }
-            else if (section == "TargetSubGrid") {
+            if (section == "TargetSubGrid") {
                 if (line != "none") {
                     targetSubGridPath.clear();
                     std::istringstream iss(line);
