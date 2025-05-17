@@ -40,18 +40,34 @@ void checkAllVictories(Grid& grid) {
         }
     }
     grid.setShape(grid.checkVictory());
-}
+};
+
+bool GameState::isBotPlayer(GridShape shape){
+    // return shape == GridShape::CIRCLE;
+    return false;
+};
 
 // wrapper pour update
 bool GameState::update(const ImVec2& window_pos, Grid& grid){
     std::vector<int> currentPath = {};
     std::vector<int> finalPath = {};
-    bool result = update(window_pos, grid, currentPath, finalPath, 0);
-    if(result){
-        redoHistory.clear();
+    bool result;
+    if(isBotPlayer(currentPlayer)){
+        result = playBot(window_pos, grid, currentPath, finalPath, 0);
+    }else{
+        result = update(window_pos, grid, currentPath, finalPath, 0);
+        if(result){
+            redoHistory.clear();
+        }
     }
     return result;
-}
+};
+
+bool GameState::playBot(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, 
+    std::vector<int>& finalPath, int recursionLevel){
+        std::vector<std::vector<int>> moves = grid.getValidMoves(targetSubGridPath);
+        playMove(moves[0], currentPlayer, grid);
+    };
 
 bool GameState::update(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, 
     std::vector<int>& finalPath, int recursionLevel) {
@@ -64,7 +80,7 @@ bool GameState::update(const ImVec2& window_pos, Grid& grid, std::vector<int> cu
     }
 
     return handleNonLeafGrid(window_pos, grid, currentPath, finalPath, recursionLevel);
-}
+};
 
 bool GameState::handleLeafGrid(const ImVec2& window_pos, Grid& grid, 
             std::vector<int>& currentPath, std::vector<int>& finalPath) {
@@ -80,7 +96,7 @@ bool GameState::handleLeafGrid(const ImVec2& window_pos, Grid& grid,
         }
     }
     return false;
-}
+};
 
 bool GameState::handleNonLeafGrid(const ImVec2& window_pos, Grid& grid, 
                std::vector<int> currentPath, std::vector<int>& finalPath, 
@@ -109,7 +125,7 @@ bool GameState::handleNonLeafGrid(const ImVec2& window_pos, Grid& grid,
     }
 
     return updated;
-}
+};
 
 bool GameState::shouldSkipSubGrid(const Grid& grid, int r, int c, int recursionLevel) const {
     if (targetSubGridPath.empty() || recursionLevel >= targetSubGridPath.size()) {
@@ -121,13 +137,13 @@ bool GameState::shouldSkipSubGrid(const Grid& grid, int r, int c, int recursionL
     int target_c = index % grid.getCols();
 
     return (r != target_r || c != target_c);
-}
+};
 
 bool GameState::updateSubGrid(const ImVec2& pos, Grid& grid, int r, int c, 
            std::vector<int>& currentPath, std::vector<int>& finalPath, 
            int recursionLevel) {
     return update(pos, grid.getSubGrid(r, c), currentPath, finalPath, recursionLevel + 1);
-}
+};
 
 void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, Grid& grid) {
     // Changement de joueur
@@ -154,14 +170,14 @@ void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, Grid& grid
             break;
         }
     }
-}
+};
 
 void GameState::reset() {
     currentPlayer = defaultPlayer();
     targetSubGridPath.clear();
     moveHistory.clear();
     redoHistory.clear();
-}
+};
 
 bool GameState::undoLastMove(Grid& rootGrid) {
     if (moveHistory.empty()) return false;
@@ -194,7 +210,7 @@ bool GameState::undoLastMove(Grid& rootGrid) {
     checkAllVictories(rootGrid);
     
     return true;
-}
+};
 
 bool GameState::redoLastMove(Grid& rootGrid) {
     if (redoHistory.empty()) return false;
@@ -205,8 +221,8 @@ bool GameState::redoLastMove(Grid& rootGrid) {
     targetSubGridPath = redoMove.target;
     currentPlayer = redoMove.shape;
 
-    playMove(redoMove.path, redoMove.shape, rootGrid);
-}
+    return playMove(redoMove.path, redoMove.shape, rootGrid);
+};
 
 bool GameState::saveState(const std::string& filename) const {
     std::ofstream outFile(filename);
@@ -217,18 +233,6 @@ bool GameState::saveState(const std::string& filename) const {
     try {
         // En-tête avec version
         outFile << "# Ultimate Tic-Tac-Toe Game State\n";
-
-        // Target subgrid path
-        outFile << "[TargetSubGrid]\n";
-        if (targetSubGridPath.empty()) {
-            outFile << "none\n";
-        } else {
-            for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
-                if (i > 0) outFile << ".";
-                outFile << targetSubGridPath[i];
-            }
-            outFile << "\n\n";
-        }
 
         // Move history
         outFile << "[MoveHistory]\n";
@@ -283,9 +287,10 @@ bool GameState::saveState(const std::string& filename) const {
 
         return outFile.good();
     } catch (...) {
+        std::cout << "Fail to save" << std::endl;
         return false;
     }
-}
+};
 
 bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
     std::ifstream inFile(filename);
@@ -314,17 +319,8 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
                 continue;
             }
 
-            if (section == "TargetSubGrid") {
-                if (line != "none") {
-                    targetSubGridPath.clear();
-                    std::istringstream iss(line);
-                    std::string token;
-                    while (std::getline(iss, token, '.')) {
-                        targetSubGridPath.push_back(std::stoi(token));
-                    }
-                }
-            }
-            else if (section == "MoveHistory") {
+
+            if (section == "MoveHistory") {
                 // Format: PATH>SHAPE@TARGET or PATH>SHAPE
                 size_t shapePos = line.find('>');
                 if (shapePos == std::string::npos) continue;
@@ -404,7 +400,7 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
     }
 
     return success && inFile.eof();
-}
+};
 
 //Duplication par rapport à update
 bool GameState::playMove(const std::vector<int>& path, GridShape player, Grid& rootGrid) {
@@ -445,7 +441,7 @@ bool GameState::playMove(const std::vector<int>& path, GridShape player, Grid& r
     }
 
     return false;
-}
+};
 
 std::ostream& operator<<(std::ostream& os, const Move& move){
     os << move.shape << " ";
@@ -457,7 +453,7 @@ std::ostream& operator<<(std::ostream& os, const Move& move){
     }
 
     return os;
-}
+};
 
 std::ostream &operator<<(std::ostream &os, const GameState &gameState)
 {
@@ -477,4 +473,4 @@ std::ostream &operator<<(std::ostream &os, const GameState &gameState)
         ;
     }
     return os;
-}
+};

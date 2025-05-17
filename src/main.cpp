@@ -53,7 +53,8 @@ int main() {
 
     setupShortcuts(shortcutManager, window, mainGrid, gameState);
 
-    // Boucle principale
+
+    // Boucle principale modifiée
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         
@@ -62,88 +63,17 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        setup_interface();
-
-        // Fenêtre du jeu (maintenant dockée)
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        // Configuration de l'interface
+        setup_interface(); // Fonction existante pour le docking
         
-        ImGui::Begin("Game", nullptr 
-            ,ImGuiWindowFlags_None
-        );
-
+        // Affichage des fenêtres
+        show_game_window(mainGrid, gameState);
+        show_options_window(mainGrid, gameState);
         
-        // Mise à jour jeu
-
-        shortcutManager.update();
-
-        ImVec2 window_pos = ImGui::GetCursorScreenPos();
-        ImVec2 window_size = ImGui::GetContentRegionAvail();
-        
-        mainGrid.setWindowSize(window_size.x, window_size.y);
-        gameState.update(window_pos, mainGrid);
-        mainGrid.getGridFromPath(gameState.targetSubGridPath).setShape(gameState.currentPlayer);
-        mainGrid.draw(window_pos, gameState.targetSubGridPath);
-
-        ImGui::End();
-        ImGui::PopStyleVar();
-
-        // Fenêtre des options (dockée à droite)
-        ImGui::Begin("Options", nullptr);
-        {
-            ImGui::Text("Paramètres du jeu");
-            ImGui::Separator();
-            if (ImGui::Button("Réinitialiser")) {
-                mainGrid.resetGrid();
-                gameState.reset();
-            }
-        
-            ImGui::Separator();
-
-            str << gameState.currentPlayer;
-            ImGui::Text("Current player : %s", str.str().c_str());
-            str.str("");
-
-
-            ImGui::Separator();        
-            // Créer 2 colonnes
-            ImGui::Columns(2, "historyColumns", false);  // false = pas de bordure
-
-            ImGui::Text("[History]");
-            ImGui::NextColumn();
-            ImGui::Text("[Redo]");
-            ImGui::NextColumn();
-            size_t max_size = std::max(gameState.moveHistory.size(), gameState.redoHistory.size());
-
-            for (size_t i = 0; i < max_size; ++i) {
-                // Colonne 1: historique des coups
-                if (i < gameState.moveHistory.size()) {
-                    str << gameState.moveHistory[i];
-                    ImGui::Text("%s", str.str().c_str());
-                    str.str("");
-                } else {
-                    ImGui::Text(" ");
-                }
-                
-                ImGui::NextColumn();
-
-                // Colonne 2: historique des redo
-                if (i < gameState.redoHistory.size()) {
-                    str << gameState.redoHistory[i];
-                    ImGui::Text("%s", str.str().c_str());
-                    str.str("");
-                } else {
-                    ImGui::Text(" ");
-                }
-                
-                ImGui::NextColumn();
-            }
-
-            ImGui::Columns(1);  // Réinitialiser à une seule colonne
-        }
-        ImGui::End();
-
         // Fin de la fenêtre de docking principale
         ImGui::End();
+
+        shortcutManager.update();
 
         // Rendu
         ImGui::Render();

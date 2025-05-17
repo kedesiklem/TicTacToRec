@@ -22,8 +22,11 @@ class GameState {
 
         GameState() {reset();}
 
+        static bool isBotPlayer(GridShape shape);
+
         bool update(const ImVec2& window_pos, Grid& grid); // wrapper
         bool update(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, std::vector<int>& finalPath, int recursionLevel);
+        bool playBot(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, std::vector<int>& finalPath, int recursionLevel);
         bool handleLeafGrid(const ImVec2 &window_pos, Grid &grid, std::vector<int> &currentPath, std::vector<int> &finalPath);
         bool handleNonLeafGrid(const ImVec2 &window_pos, Grid &grid, std::vector<int> currentPath, std::vector<int> &finalPath, int recursionLevel);
         bool shouldSkipSubGrid(const Grid &grid, int r, int c, int recursionLevel) const;

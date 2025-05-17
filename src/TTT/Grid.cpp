@@ -305,7 +305,8 @@ GridShape Grid::checkVictory(){
     return GridShape::DRAW;
 }
 
-// Duplication par rapport à draw
+// Explosé au sol : à refaire
+// =================================================
 std::vector<std::vector<int>> Grid::getValidMoves(const std::vector<int>& currentPath, const std::vector<int>& targetPath) const {
     std::vector<std::vector<int>> validMoves;
     if(!isLockedShaped() && starts_with(currentPath, targetPath)){
@@ -318,7 +319,7 @@ std::vector<std::vector<int>> Grid::getValidMoves(const std::vector<int>& curren
                     newPath.push_back(r * getCols() + c);
                     
                     // Récupérer les mouvements valides de la sous-grille
-                    auto subMoves = subGrids[r][c].getValidMoves(newPath);
+                    auto subMoves = subGrids[r][c].getValidMoves(newPath, targetPath);
                     validMoves.insert(validMoves.end(), subMoves.begin(), subMoves.end());
                 }
             }
@@ -330,3 +331,4 @@ std::vector<std::vector<int>> Grid::getValidMoves(const std::vector<int>& curren
 std::vector<std::vector<int>> Grid::getValidMoves(const std::vector<int>& targetPath) const {
     return getValidMoves({}, targetPath);
 }
+// =================================================

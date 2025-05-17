@@ -10,6 +10,10 @@
 #include <iostream>
 #include <sstream>
 
+#include <GameState.h>
+
+#define SAVE_WIN_FILE "win.ttt"
+
 namespace {
 
     void setup_init(ImGuiID dockspace_id){
@@ -57,5 +61,80 @@ namespace {
                 
                 setup_init(dockspace_id);
             }
+        };
+
+    void show_game_window(Grid& mainGrid, GameState& gameState) {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGui::Begin("Game", nullptr, ImGuiWindowFlags_None);
+        
+        ImVec2 window_pos = ImGui::GetCursorScreenPos();
+        ImVec2 window_size = ImGui::GetContentRegionAvail();
+        
+        mainGrid.setWindowSize(window_size.x, window_size.y);
+        if(gameState.update(window_pos, mainGrid)){
+            //Si le coup est bien joué on check s'il y a un gagnant et le cas échéant on enregistre la game dans un fichier
+            if(mainGrid.isWinningShape())
+                    gameState.saveState(SAVE_WIN_FILE);
         }
+        mainGrid.getGridFromPath(gameState.targetSubGridPath).setShape(gameState.currentPlayer);
+        mainGrid.draw(window_pos, gameState.targetSubGridPath);
+        
+        ImGui::End();
+        ImGui::PopStyleVar();
+    };
+
+    // Nouvelle fonction pour la fenêtre d'options
+    void show_options_window(Grid& mainGrid, GameState& gameState) {
+        ImGui::Begin("Options", nullptr);
+        {
+            ImGui::Text("Paramètres du jeu");
+            ImGui::Separator();
+            if (ImGui::Button("Réinitialiser")) {
+                mainGrid.resetGrid();
+                gameState.reset();
+            }
+            
+            ImGui::Separator();
+
+            std::ostringstream str;
+            str << gameState.currentPlayer;
+            ImGui::Text("Current player : %s", str.str().c_str());
+            str.str("");
+
+            ImGui::Separator();        
+            ImGui::Columns(2, "historyColumns", false);
+
+            ImGui::Text("[History]");
+            ImGui::NextColumn();
+            ImGui::Text("[Redo]");
+            ImGui::NextColumn();
+
+            size_t max_size = std::max(gameState.moveHistory.size(), gameState.redoHistory.size());
+            for (size_t i = 0; i < max_size; ++i) {
+                if (i < gameState.moveHistory.size()) {
+                    str << gameState.moveHistory[i];
+                    ImGui::Text("%s", str.str().c_str());
+                    str.str("");
+                } else {
+                    ImGui::Text(" ");
+                }
+                
+                ImGui::NextColumn();
+
+                if (i < gameState.redoHistory.size()) {
+                    str << gameState.redoHistory[i];
+                    ImGui::Text("%s", str.str().c_str());
+                    str.str("");
+                } else {
+                    ImGui::Text(" ");
+                }
+                
+                ImGui::NextColumn();
+            }
+
+            ImGui::Columns(1);
+        }
+        ImGui::End();
+    };
+
 }// namespace

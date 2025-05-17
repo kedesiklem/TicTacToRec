@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <imfilebrowser.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h>
@@ -10,22 +11,22 @@
 #include <fstream>
 
 namespace{
-    float getMinSideScreen(){
+    [[maybe_unused]] float getMinSideScreen(){
         const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         return std::min(mode->width, mode->height);
     }
 
-    int getWidthScreen(){
+    [[maybe_unused]] int getWidthScreen(){
         const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         return mode->width;
     }
 
-    int getHeightScreen(){
+    [[maybe_unused]] int getHeightScreen(){
         const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         return mode->height;
     }
 
-    void LoadFonts(ImGuiIO& io, float fontSize) {
+    [[maybe_unused]] void LoadFonts(ImGuiIO& io, float fontSize) {
         const char* fontPath = ""; // MonoSpace si possible
         io.Fonts->Clear();
         ImFont* font = nullptr;
@@ -43,7 +44,7 @@ namespace{
         ImGui_ImplOpenGL3_CreateFontsTexture();    
     }
 
-    void initDarkStyle(){
+    [[maybe_unused]] void initDarkStyle(){
         ImGuiStyle& style = ImGui::GetStyle();
         style.WindowRounding = 5.3f;
         style.FrameRounding = 2.3f;
@@ -93,7 +94,7 @@ namespace{
 
     }
 
-    void initLightStyle(){
+    [[maybe_unused]] void initLightStyle(){
         ImGuiStyle& style = ImGui::GetStyle();
         style.WindowRounding = 5.3f;
         style.FrameRounding = 2.3f;

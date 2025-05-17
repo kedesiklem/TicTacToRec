@@ -2,7 +2,7 @@
 #define GRID_H
 
 #include <vector>
-#include "imgui.h"
+#include <imgui.h>
 #include <iostream>
 
 #define GRID_MIN_SIZE 10.0f
@@ -70,10 +70,13 @@ class Grid {
         
         void resetGrid();
         
-        bool isWinningShape(GridShape shape) const {
+        static bool isWinningShape(GridShape shape) {
             return (shape == GridShape::CROSS || shape == GridShape::CIRCLE);
         }
 
+        bool isWinningShape() const {
+            return isWinningShape(currentShape);
+        }
         bool isLockedShaped() const {
             return (currentShape != GridShape::NONE);
         }
