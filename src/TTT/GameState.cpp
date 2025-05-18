@@ -6,27 +6,44 @@ GridShape defaultPlayer() {
 }
 
 bool GameState::isBotPlayer(GridShape shape) {
+    return shape == GridShape::CIRCLE;
+}
+
+bool GameState::playTurn(GridView& gridView){
+    if(isBotPlayer(currentPlayer)){
+        if(playBot(gridView.grid_root)){
+            return true;
+        }
+        return false;
+
+    }else{
+        auto path = gridView.handleGridInteraction();
+        if(path){
+            return playMove(path.value(), gridView.grid_root);
+        }
+    }
+}
+
+bool GameState::playBot(GridLogic& grid) {
+    std::vector<Path> moves = grid.getAvailableMove(targetSubGridPath);
+    if(!moves.empty())
+        return playMove(moves[rand() % (moves.size() - 1)], grid);
+        
     return false;
 }
 
-bool GameState::playBot(const ImVec2& window_pos, GridLogic& grid, std::vector<int> currentPath, 
-    std::vector<int>& finalPath, int recursionLevel) {
-    std::vector<std::vector<int>> moves = grid.getValidMoves(targetSubGridPath);
-    return grid.playMove(moves[0], currentPlayer);
-}
-
-bool GameState::playMove(std::vector<int> path, GridLogic& grid)
+bool GameState::playMove(Path path, GridLogic& grid)
 {
-    playMove(path, grid, currentPlayer);
+    return playMove(path, grid, currentPlayer);
 }
 
-bool GameState::playMove(std::vector<int> path, GridLogic& grid, GridShape player)
+bool GameState::playMove(Path path, GridLogic& grid, GridShape player)
 {
     redoHistory.clear();
     return playMoveBase(path, grid, player);
 }
 
-bool GameState::playMoveBase(std::vector<int> path, GridLogic& grid, GridShape player)
+bool GameState::playMoveBase(Path path, GridLogic& grid, GridShape player)
 {
     if(starts_with(path, targetSubGridPath))
         if(grid.playMove(path, player)){
@@ -36,7 +53,7 @@ bool GameState::playMoveBase(std::vector<int> path, GridLogic& grid, GridShape p
     return false;
 }
 
-void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, GridLogic& grid) {
+void GameState::endTurn(const Path lastPlayedSubGridPath, GridLogic& grid) {
     moveHistory.push_back({lastPlayedSubGridPath, targetSubGridPath, currentPlayer});
     currentPlayer = GridLogic::nextShapePlayable(currentPlayer);
 
@@ -48,7 +65,7 @@ void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, GridLogic&
     targetSubGridPath = lastPlayedSubGridPath;
     targetSubGridPath.erase(targetSubGridPath.begin());
     
-    std::vector<int> currentPath;
+    Path currentPath;
     for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
         currentPath.push_back(targetSubGridPath[i]);        
         if (grid.getGridFromPath(currentPath).getShape() != GridShape::NONE) {
@@ -198,7 +215,7 @@ bool GameState::loadState(const std::string& filename, GridLogic& rootGrid) {
                 size_t targetPos = rest.find('@');
                 GridShape shape = GridLogic::StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
                 
-                std::vector<int> path;
+                Path path;
                 if (pathStr != "root") {
                     std::istringstream pathIss(pathStr);
                     std::string token;
@@ -207,7 +224,7 @@ bool GameState::loadState(const std::string& filename, GridLogic& rootGrid) {
                     }
                 }
 
-                std::vector<int> target;
+                Path target;
                 if (targetPos != std::string::npos) {
                     std::string targetStr = rest.substr(targetPos + 1);
                     std::istringstream targetIss(targetStr);
@@ -231,7 +248,7 @@ bool GameState::loadState(const std::string& filename, GridLogic& rootGrid) {
                 size_t targetPos = rest.find('@');
                 GridShape shape = GridLogic::StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
                 
-                std::vector<int> path;
+                Path path;
                 if (pathStr != "root") {
                     std::istringstream pathIss(pathStr);
                     std::string token;
@@ -240,7 +257,7 @@ bool GameState::loadState(const std::string& filename, GridLogic& rootGrid) {
                     }
                 }
 
-                std::vector<int> target;
+                Path target;
                 if (targetPos != std::string::npos) {
                     std::string targetStr = rest.substr(targetPos + 1);
                     std::istringstream targetIss(targetStr);

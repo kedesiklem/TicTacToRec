@@ -3,12 +3,16 @@
 #include <vector>
 #include <iostream>
 
+
+
 template <typename T>
 bool starts_with(const std::vector<T>& vec, const std::vector<T>& prefix) {
     if (prefix.size() > vec.size()) return true;
     
     return std::equal(prefix.begin(), prefix.end(), vec.begin());
 }
+
+using Path = std::vector<int>;
 
 enum class GridShape {
     NONE,
@@ -20,6 +24,9 @@ enum class GridShape {
 std::ostream& operator<<(std::ostream& os, const GridShape& shape);
 
 class GridLogic {
+
+    
+
     int rows;
     int cols;
     GridShape currentShape = GridShape::NONE;
@@ -27,52 +34,55 @@ class GridLogic {
 
     public:
 
-    GridLogic(int rows, int cols, int depth = 0);
+        GridLogic(int rows, int cols, int depth = 0);
 
-    void resetGrid();
+        void resetGrid();
 
-    static GridShape nextShapePlayable(const GridShape shape);
-    static std::string GridShapeToString(const GridShape shape);
-    static GridShape StringToGridShape(const std::string& str);
-    static bool isWinningShape(const GridShape shape) {
-        return (shape == GridShape::CROSS || shape == GridShape::CIRCLE);
-    }
+        static GridShape nextShapePlayable(const GridShape shape);
+        static std::string GridShapeToString(const GridShape shape);
+        static GridShape StringToGridShape(const std::string& str);
+        static bool isWinningShape(const GridShape shape) {
+            return (shape == GridShape::CROSS || shape == GridShape::CIRCLE);
+        }
 
-    bool isWinningShape() const {
-        return isWinningShape(currentShape);
-    }
-    bool isLockedShaped() const {
-        return (currentShape != GridShape::NONE);
-    }
-    bool isLeaf() const { 
-        return subGrids.empty(); 
-    }
-    const GridShape getShape() const {
-        return currentShape;
+        bool isWinningShape() const {
+            return isWinningShape(currentShape);
+        }
+        bool isLockedShaped() const {
+            return (currentShape != GridShape::NONE);
+        }
+        bool isLeaf() const { 
+            return subGrids.empty(); 
+        }
+        const GridShape getShape() const {
+            return currentShape;
+        };
+        void setShape(const GridShape shape) {
+            currentShape = shape;
+        }
+        int getRows() const {
+            return rows;
+        } 
+        int getCols() const {
+            return cols;
+        } 
+
+        GridLogic& getSubGrid(int index);
+        const GridLogic& getSubGrid(int index) const;
+        GridLogic &getSubGrid(size_t row, size_t col);
+        const GridLogic &getSubGrid(size_t row, size_t col) const;
+        GridLogic getGridFromPath(const Path& path);
+        GridShape checkVictory();
+
+        bool playMove(const Path& path, GridShape player);
+        bool playMove(const Path& path, GridShape player, size_t step, bool locked, Path currentPath = {});
+
+        void undoMove(const Path& path, size_t step = 0);
+
+        std::vector<Path> getAvailableMove(const Path& target = {}, Path currentPath = {}) const;
+
+        friend std::ostream& operator<<(std::ostream& os, const GridShape& shape);
     };
-    void setShape(const GridShape shape) {
-        currentShape = shape;
-    }
-    int getRows() const {
-        return rows;
-    } 
-    int getCols() const {
-        return cols;
-    } 
-
-    GridLogic& getSubGrid(int index);
-    GridLogic &getSubGrid(size_t row, size_t col);
-    const GridLogic &getSubGrid(size_t row, size_t col) const;
-    GridLogic getGridFromPath(const std::vector<int>& path);
-    GridShape checkVictory();
-
-    std::vector<std::vector<int>> getValidMoves(std::vector<int> target);
-    bool playMove(const std::vector<int>& path, GridShape player);
-    bool playMove(const std::vector<int>& path, GridShape player, size_t step, bool locked, std::vector<int> currentPath = {});
-
-    void undoMove(const std::vector<int>& path, size_t step = 0);
-
-    friend std::ostream& operator<<(std::ostream& os, const GridShape& shape);
-};
 
 std::ostream& operator<<(std::ostream& os, const GridShape& shape);
+std::ostream& operator<<(std::ostream& os, const Path& path);

@@ -7,13 +7,15 @@
 #include "GridLogic.hpp"
 
 class GridView {
-    GridLogic& grid_root;
     float ratio;
 
     ImVec2 pos;
     ImVec2 size;
 
 public:
+
+    GridLogic& grid_root;
+
     GridView(GridLogic& grid, float ratio)
         : grid_root(grid), ratio(ratio) {}
 
@@ -48,12 +50,12 @@ public:
         this->size = size;
     }
 
-    void draw(std::vector<int> targetSubGridPath = {}){
+    void draw(Path targetSubGridPath = {}){
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
         draw(draw_list, grid_root, pos, size, targetSubGridPath);
     }
 
-    void draw(ImDrawList* draw_list, const GridLogic& grid, const ImVec2& pos, const ImVec2& size, std::vector<int> targetSubGridPath = {}, std::vector<int> currentPath = {}, bool locked = false) {
+    void draw(ImDrawList* draw_list, const GridLogic& grid, const ImVec2& pos, const ImVec2& size, Path targetSubGridPath = {}, Path currentPath = {}, bool locked = false) {
         
         locked |= grid.isLockedShaped();
         locked |= !starts_with(currentPath, targetSubGridPath);
@@ -81,7 +83,7 @@ public:
     }
 
 
-    std::optional<std::vector<int>> handleGridInteraction(std::vector<int> targetSubGridPath = {}) {
+    std::optional<Path> handleGridInteraction(Path targetSubGridPath = {}) {
         if(ImGui::IsMouseClicked(ImGuiMouseButton(0))){
             return handleGridInteractionImpl(grid_root, pos, size, targetSubGridPath);
         }else{
@@ -93,7 +95,7 @@ public:
     
 private:
 
-    std::optional<std::vector<int>> handleGridInteractionImpl(const GridLogic& grid, const ImVec2& pos, const ImVec2& size, std::vector<int> targetSubGridPath, std::vector<int> currentPath = {}) {
+    std::optional<Path> handleGridInteractionImpl(const GridLogic& grid, const ImVec2& pos, const ImVec2& size, Path targetSubGridPath, Path currentPath = {}) {
         // Vérifie si la souris est sur cette cellule
         bool hovered = isHovered(pos, size);
         
@@ -157,7 +159,10 @@ private:
     void drawLeafCell(ImDrawList* draw_list, const GridLogic& grid, const ImVec2& pos, const ImVec2& size, bool locked) {
         
         if(locked){
-            draw_list->AddRectFilled(pos, pos + size, IM_COL32(100, 100, 100, 50), 4.0f);
+            ImU32 bg_color =    (grid.getShape() == GridShape::CROSS) ? IM_COL32(255, 0, 0, 50) : 
+                                (grid.getShape() == GridShape::CIRCLE) ? IM_COL32(0, 0, 255, 50) : 
+                                IM_COL32(100, 100, 100, 50);
+            draw_list->AddRectFilled(pos, pos + size, bg_color, 4.0f);
         }else{
             // Couleur de fond
             ImU32 bg_color = IM_COL32(70, 70, 70, 255);  // Gris foncé

@@ -41,6 +41,7 @@ public:
     using GameFunctor::GameFunctor;
     void exec() override { 
         gameState.undoLastMove(mainGrid);
+        gameState.undoLastMove(mainGrid);
     }
 };
 
@@ -49,6 +50,7 @@ public:
     using GameFunctor::GameFunctor;
     void exec() override { 
         gameState.redoLastMove(mainGrid);
+        gameState.redoLastMove(mainGrid);
     }
 };
 
@@ -56,17 +58,12 @@ class PrintValidMovesFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        std::cout << "Valid Moves" << std::endl;
-        auto validMove = mainGrid.getValidMoves(gameState.targetSubGridPath);
+        auto validMove = mainGrid.getAvailableMove(gameState.targetSubGridPath);
+        std::cout << "Valid Moves[" << validMove.size() << "]" << std::endl;
         for(auto move : validMove){
-            for(size_t i=0; i<move.size() - 1; ++i){
-                std::cout << move[i] << ",";
-            }
-            if(move.size() > 0){
-                std::cout << move[move.size() - 1];
-            }
-            std::cout << std::endl;
+            std::cout << "[" << move << "]";
         }
+        std::cout << std::endl;
     }
 };
 

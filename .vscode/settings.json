@@ -66,6 +66,11 @@
     "__tree": "cpp",
     "queue": "cpp",
     "stack": "cpp",
-    "set": "cpp"
+    "set": "cpp",
+    "__bit_reference": "cpp",
+    "filesystem": "cpp",
+    "__string": "cpp",
+    "ios": "cpp",
+    "list": "cpp"
   }
 }

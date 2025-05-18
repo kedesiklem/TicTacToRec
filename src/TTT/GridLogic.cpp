@@ -68,6 +68,17 @@ GridLogic& GridLogic::getSubGrid(int index){
     return getSubGrid(r,c);
 };
 
+const GridLogic& GridLogic::getSubGrid(int index) const {
+    if (index < 0 || index >= rows * cols) {
+        throw std::out_of_range("Invalid subgrid indices");
+    }
+
+    int r = index / cols;
+    int c = index % cols;
+
+    return getSubGrid(r,c);
+};
+
 GridLogic& GridLogic::getSubGrid(size_t row, size_t col) {
     if (row >= 0 && row < rows && col >= 0 && col < cols) {
         return subGrids[row][col];
@@ -82,8 +93,7 @@ const GridLogic& GridLogic::getSubGrid(size_t row, size_t col) const {
     throw std::out_of_range("Invalid subgrid indices");
 };
 
-
-GridLogic GridLogic::getGridFromPath(const std::vector<int>& path) {
+GridLogic GridLogic::getGridFromPath(const Path& path) {
     GridLogic* grid = this;
     for (int index : path) {
         int row = index / cols;
@@ -165,82 +175,11 @@ GridShape GridLogic::checkVictory(){
     return GridShape::DRAW;
 }
 
-std::vector<std::vector<int>> GridLogic::getValidMoves(std::vector<int> target) {
-    std::vector<std::vector<int>> validMoves;
-    
-    // Si la cible est vide, on peut jouer n'importe où
-    if (target.empty()) {
-        if (isLeaf()) {
-            // Si c'est une feuille et non verrouillée, c'est un coup valide
-            if (!isLockedShaped()) {
-                validMoves.push_back({}); // Coup vide signifie cette cellule
-            }
-        } else {
-            // Pour chaque sous-grille non verrouillée
-            for (int r = 0; r < rows; ++r) {
-                for (int c = 0; c < cols; ++c) {
-                    if (!subGrids[r][c].isLockedShaped()) {
-                        // Récupère les coups valides de la sous-grille
-                        auto subMoves = subGrids[r][c].getValidMoves({});
-                        for (auto& move : subMoves) {
-                            move.insert(move.begin(), r * cols + c);
-                            validMoves.push_back(move);
-                        }
-                    }
-                }
-            }
-        }
-        return validMoves;
-    }
-
-    // Si la cible pointe vers cette grille
-    if (target.size() == 1) {
-        int index = target[0];
-        if (index < 0 || index >= rows * cols) {
-            return validMoves; // Cible invalide
-        }
-
-        int r = index / cols;
-        int c = index % cols;
-
-        if (subGrids[r][c].isLockedShaped()) {
-            // Si la sous-grille cible est verrouillée, on peut jouer n'importe où
-            return getValidMoves({});
-        }
-
-        // Récupère les coups valides dans la sous-grille cible
-        auto subMoves = subGrids[r][c].getValidMoves({});
-        for (auto& move : subMoves) {
-            move.insert(move.begin(), index);
-            validMoves.push_back(move);
-        }
-        return validMoves;
-    }
-
-    // Si la cible est plus profonde, on délègue à la sous-grille appropriée
-    int index = target[0];
-    if (index < 0 || index >= rows * cols) {
-        return validMoves; // Cible invalide
-    }
-
-    int r = index / cols;
-    int c = index % cols;
-    std::vector<int> remainingTarget(target.begin() + 1, target.end());
-    
-    auto subMoves = subGrids[r][c].getValidMoves(remainingTarget);
-    for (auto& move : subMoves) {
-        move.insert(move.begin(), index);
-        validMoves.push_back(move);
-    }
-
-    return validMoves;
-}
-
-bool GridLogic::playMove(const std::vector<int> &path, GridShape player){
+bool GridLogic::playMove(const Path &path, GridShape player){
     return playMove(path, player, 0, false);
 }
 
-bool GridLogic::playMove(const std::vector<int> &path, GridShape player, size_t step, bool locked, std::vector<int> currentPath)
+bool GridLogic::playMove(const Path &path, GridShape player, size_t step, bool locked, Path currentPath)
 {
     locked |= isLockedShaped();
     locked |= !starts_with(currentPath, path);
@@ -260,7 +199,7 @@ bool GridLogic::playMove(const std::vector<int> &path, GridShape player, size_t 
     return false;
 }
 
-void GridLogic::undoMove(const std::vector<int> &path, size_t step)
+void GridLogic::undoMove(const Path &path, size_t step)
 {
     if(step == path.size()){
         if(isLeaf() && isLockedShaped()){
@@ -272,16 +211,50 @@ void GridLogic::undoMove(const std::vector<int> &path, size_t step)
         setShape(GridShape::NONE);
         getSubGrid(path[step]).undoMove(path, step +1);
     }
-};
+}
+
+std::vector<Path> GridLogic::getAvailableMove(const Path &target, Path currentPath) const
+{
+    std::vector<Path> result;
+
+    bool locked = false;
+    locked |= isLockedShaped();
+    locked |= !starts_with(currentPath, target);
+    if (locked) {
+        return result;
+    }
+
+    if (isLeaf()) {
+        result.push_back(currentPath);
+    } else {
+        for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+                int index = r * cols + c;
+                currentPath.push_back(index);
+                auto tmp = getSubGrid(index).getAvailableMove(target, currentPath);
+                result.insert(result.end(), tmp.begin(), tmp.end());
+                currentPath.pop_back();
+            }
+        }
+    }
+    return result;
+}
 
 std::ostream& operator<<(std::ostream& os, const GridShape& shape){ 
-    switch (shape){
-        case GridShape::NONE   :    os << "None"; break;
-        case GridShape::CROSS  :    os << "X";    break;
-        case GridShape::CIRCLE :    os << "O";    break;
-        case GridShape::DRAW   :    os << "-";    break;
+    os << GridLogic::GridShapeToString(shape);
+    return os;
+};
 
-        default: os << "Undefined"; break;
+std::ostream& operator<<(std::ostream& os, const Path& path){ 
+    if(path.empty()){
+        os << "empty";
+    }else{
+        for(size_t i=0; i<path.size() - 1; ++i){
+            os << path[i] << ",";
+        }
+        os << path.back();
+        
     }
     return os;
 };
+

@@ -70,10 +70,9 @@ namespace {
         GridView gridView(mainGrid, .98f);
 
         gridView.update(window_pos + marging, ImVec2{min_size, min_size} - (marging * 2));
-        auto path = gridView.handleGridInteraction();
-        if(path){
-            gameState.playMove(path.value(), mainGrid);
-        }
+
+        gameState.playTurn(gridView);
+
         gridView.draw(gameState.targetSubGridPath);
         
         ImGui::End();
