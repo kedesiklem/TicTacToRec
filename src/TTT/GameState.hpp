@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MonteCarloBot.hpp"
 #include "GridView.hpp"
 #include <fstream>
 #include <sstream>
@@ -13,26 +14,37 @@ struct Move {
 
 class GameState {
 public:
+
+    MonteCarloBot& bot;
+    GridView& grid;
     GridShape currentPlayer;
     Path targetSubGridPath;
     std::vector<Move> moveHistory;
     std::vector<Move> redoHistory;
 
-    GameState() { reset(); }
+    GameState(GridView& grid, MonteCarloBot& bot) : grid(grid), bot(bot) { reset(); }
 
     static bool isBotPlayer(GridShape shape);
-    bool playTurn(GridView& gridView);
-    bool playMonteCarloBot(GridLogic& grid);
-    double evaluateMoveWithMonteCarlo(const Path& move, GridLogic& grid, int simulations);
-    bool playBot(GridLogic& grid);
-    bool playMove(Path path, GridLogic& grid, GridShape player);
-    bool playMove(Path path, GridLogic& grid);
-    bool playMoveBase(Path path, GridLogic& grid, GridShape player);
-    void endTurn(const Path lastPlayedSubGridPath, GridLogic& grid);
+
+    bool playMove(Path path, GridShape player);
+    bool playMove(Path path);
+    bool playMoveBase(Path path, GridShape player);
+
+    bool playBot();
+
+    bool playTurn();
+    
+
+    void endTurn(const Path lastPlayedSubGridPath);
+    
+    
     bool saveState(const std::string& filename) const;
-    bool loadState(const std::string& filename, GridLogic& rootGrid);
-    bool undoLastMove(GridLogic& rootGrid);
-    bool redoLastMove(GridLogic& rootGrid);
+    bool loadState(const std::string& filename);
+    
+    
+    bool undoLastMove();
+    bool redoLastMove();
+    
     void reset();
 };
 

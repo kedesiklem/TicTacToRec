@@ -1,10 +1,36 @@
 # Ultimate Tic-Tac-Toe Game State
 [MoveHistory]
 # Format: PATH>SHAPE@TARGET (SHAPE uses enum names)
-8.0>CROSS
-0.8>CIRCLE@0
-8.1>CROSS@8
+4.8>X
+8.0>O@8
+0.8>X@0
+8.1>O@8
+1.8>X@1
+8.4>O@8
+4.6>X@4
+6.6>O@6
+6.8>X@6
+8.5>O@8
+5.8>X@5
+8.6>O@8
+6.3>X@6
+3.8>O@3
+8.3>X@8
+3.1>O@3
+1.2>X@1
+2.8>O@2
+8.7>X@8
+7.8>O@7
+8.2>X@8
+2.7>O@2
+7.2>X@7
+2.6>O@2
+6.1>X@6
+1.6>O@1
+6.0>X@6
+0.6>O@0
+6.4>X@6
+4.2>O@4
+8.8>X
 
 [RedoHistory]
-8.2>CROSS@8
-1.8>CIRCLE@1

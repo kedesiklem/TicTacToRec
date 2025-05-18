@@ -17,7 +17,7 @@ GridLogic::GridLogic(int rows, int cols, int depth) : rows(rows), cols(cols) {
     }
 }
 
-GridShape GridLogic::nextShapePlayable(GridShape shape){
+GridShape GridLogic::nextShapePlayable(const GridShape shape){
     switch (shape){
         case GridShape::CROSS:
             return GridShape::CIRCLE;
@@ -32,19 +32,19 @@ GridShape GridLogic::nextShapePlayable(GridShape shape){
 
 std::string GridLogic::GridShapeToString(GridShape shape) {
     switch(shape) {
-        case GridShape::NONE: return "NONE";
-        case GridShape::CROSS: return "CROSS";
-        case GridShape::CIRCLE: return "CIRCLE";
-        case GridShape::DRAW: return "DRAW";
-        default: return "UNKNOWN";
+        case GridShape::NONE: return "N";
+        case GridShape::CROSS: return "X";
+        case GridShape::CIRCLE: return "O";
+        case GridShape::DRAW: return "=";
+        default: return "?";
     }
 }
 
 GridShape GridLogic::StringToGridShape(const std::string& str) {
-    if (str == "NONE") return GridShape::NONE;
-    if (str == "CROSS") return GridShape::CROSS;
-    if (str == "CIRCLE") return GridShape::CIRCLE;
-    if (str == "DRAW") return GridShape::DRAW;
+    if (str == "N") return GridShape::NONE;
+    if (str == "X") return GridShape::CROSS;
+    if (str == "O") return GridShape::CIRCLE;
+    if (str == "=") return GridShape::DRAW;
     return GridShape::NONE; // Valeur par défaut
 }
 
@@ -192,7 +192,7 @@ bool GridLogic::playMove(const Path &path, GridShape player, size_t step, bool l
     }else{
         currentPath.push_back(path[step]);
         if(getSubGrid(path[step]).playMove(path, player, step +1, locked, currentPath)){
-            if(checkVictory() == player) setShape(player);
+            setShape(checkVictory());
             return true;
         }
     }
@@ -239,22 +239,3 @@ std::vector<Path> GridLogic::getAvailableMove(const Path &target, Path currentPa
     }
     return result;
 }
-
-std::ostream& operator<<(std::ostream& os, const GridShape& shape){ 
-    os << GridLogic::GridShapeToString(shape);
-    return os;
-};
-
-std::ostream& operator<<(std::ostream& os, const Path& path){ 
-    if(path.empty()){
-        os << "empty";
-    }else{
-        for(size_t i=0; i<path.size() - 1; ++i){
-            os << path[i] << ",";
-        }
-        os << path.back();
-        
-    }
-    return os;
-};
-

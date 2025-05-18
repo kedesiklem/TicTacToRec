@@ -1,124 +1,51 @@
 #include "GameState.hpp"
-#include "GridView.hpp"
 
 GridShape defaultPlayer() {
     return GridShape::CROSS;
 }
 
 bool GameState::isBotPlayer(GridShape shape) {
-    return shape == GridShape::CIRCLE;
+    // return shape == GridShape::CIRCLE;
+    return false;
 }
 
-bool GameState::playTurn(GridView& gridView){
-    if(isBotPlayer(currentPlayer)){
-        if(playBot(gridView.grid_root)){
-            return true;
-        }
-        return false;
-
-    }else{
-        auto path = gridView.handleGridInteraction();
-        if(path){
-            return playMove(path.value(), gridView.grid_root);
-        }
-    }
-}
-
-bool GameState::playMonteCarloBot(GridLogic& grid) {
-    std::vector<Path> moves = grid.getAvailableMove(targetSubGridPath);
-    if (moves.empty()) return false;
-
-    // Évalue chaque coup possible avec Monte Carlo
-    Path bestMove;
-    double bestScore = -1.0;
-
-    for (const auto& move : moves) {
-        double score = evaluateMoveWithMonteCarlo(move, grid, 1000);
-        if (score > bestScore) {
-            bestScore = score;
-            bestMove = move;
-        }
-    }
-
-    return playMove(bestMove, grid);
-}
-
-double GameState::evaluateMoveWithMonteCarlo(const Path& move, GridLogic& grid, int simulations) {
-    int wins = 0;
-    GridLogic tempGrid = grid; // Copie de la grille pour simulation
-
-    // Joue le coup initial
-    tempGrid.playMove(move, currentPlayer);
-
-    // Simule 'simulations' parties aléatoires
-    for (int i = 0; i < simulations; ++i) {
-        GridLogic simulationGrid = tempGrid; // Copie pour chaque simulation
-        GridShape currentSimPlayer = GridLogic::nextShapePlayable(currentPlayer);
-        bool gameOver = false;
-
-        while (!gameOver) {
-            std::vector<Path> availableMoves = simulationGrid.getAvailableMove({});
-            if (availableMoves.empty()) {
-                gameOver = true;
-                break;
-            }
-
-            // Joue un coup aléatoire
-            Path randomMove = availableMoves[rand() % availableMoves.size()];
-            simulationGrid.playMove(randomMove, currentSimPlayer);
-
-            // Vérifie si la partie est terminée
-            GridShape result = simulationGrid.checkVictory();
-
-            int score = 0;
-            switch (result){
-                case GridShape::CIRCLE :
-                    score = 1;
-                    break;
-                case GridShape::CROSS :
-                    score = -1;
-                    break;
-            }
-
-            wins += score;
-
-            if (result != GridShape::NONE) {
-                gameOver = true;
-            }
-
-            currentSimPlayer = GridLogic::nextShapePlayable(currentSimPlayer);
-        }
-    }
-
-    return static_cast<double>(wins) / simulations;
-}
-
-bool GameState::playBot(GridLogic& grid) {
-    return playMonteCarloBot(grid);
-}
-
-bool GameState::playMove(Path path, GridLogic& grid)
+bool GameState::playMove(Path path)
 {
-    return playMove(path, grid, currentPlayer);
+    return playMove(path, currentPlayer);
 }
 
-bool GameState::playMove(Path path, GridLogic& grid, GridShape player)
+bool GameState::playMove(Path path, GridShape player)
 {
     redoHistory.clear();
-    return playMoveBase(path, grid, player);
+    return playMoveBase(path, player);
 }
 
-bool GameState::playMoveBase(Path path, GridLogic& grid, GridShape player)
+bool GameState::playMoveBase(Path path, GridShape player)
 {
     if(starts_with(path, targetSubGridPath))
-        if(grid.playMove(path, player)){
-            endTurn(path, grid);
+        if(grid.grid_root.playMove(path, player)){
+            endTurn(path);
             return true;
         }
     return false;
 }
 
-void GameState::endTurn(const Path lastPlayedSubGridPath, GridLogic& grid) {
+bool GameState::playBot() {
+    return playMove(bot.getMonteCarloBotMove(grid.grid_root, currentPlayer, targetSubGridPath));
+}
+
+bool GameState::playTurn(){
+    if(isBotPlayer(currentPlayer)){
+        return playBot();
+    }else{
+        auto path = grid.handleGridInteraction();
+        if(path){
+            return playMove(path.value());
+        }
+    }
+}
+
+void GameState::endTurn(const Path lastPlayedSubGridPath) {
     moveHistory.push_back({lastPlayedSubGridPath, targetSubGridPath, currentPlayer});
     currentPlayer = GridLogic::nextShapePlayable(currentPlayer);
 
@@ -133,7 +60,7 @@ void GameState::endTurn(const Path lastPlayedSubGridPath, GridLogic& grid) {
     Path currentPath;
     for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
         currentPath.push_back(targetSubGridPath[i]);        
-        if (grid.getGridFromPath(currentPath).getShape() != GridShape::NONE) {
+        if (grid.grid_root.getGridFromPath(currentPath).getShape() != GridShape::NONE) {
             currentPath.pop_back();
             targetSubGridPath.assign(currentPath.begin(), currentPath.end());
             break;
@@ -142,13 +69,14 @@ void GameState::endTurn(const Path lastPlayedSubGridPath, GridLogic& grid) {
 }
 
 void GameState::reset() {
+    grid.grid_root.resetGrid();
     currentPlayer = defaultPlayer();
     targetSubGridPath.clear();
     moveHistory.clear();
     redoHistory.clear();
 }
 
-bool GameState::undoLastMove(GridLogic& rootGrid) {
+bool GameState::undoLastMove() {
     if (moveHistory.empty()) return false;
 
     Move lastMove = moveHistory.back();
@@ -159,7 +87,7 @@ bool GameState::undoLastMove(GridLogic& rootGrid) {
     currentPlayer = lastMove.shape;
 
 
-    GridLogic* currentGrid = &rootGrid;
+    GridLogic* currentGrid = &grid.grid_root;
     currentGrid->setShape(GridShape::NONE);
 
     for (size_t i = 0; i < lastMove.path.size(); ++i) {
@@ -178,7 +106,7 @@ bool GameState::undoLastMove(GridLogic& rootGrid) {
     return true;
 }
 
-bool GameState::redoLastMove(GridLogic& rootGrid) {
+bool GameState::redoLastMove() {
     if (redoHistory.empty()) return false;
 
     Move redoMove = redoHistory.back();
@@ -187,7 +115,7 @@ bool GameState::redoLastMove(GridLogic& rootGrid) {
     targetSubGridPath = redoMove.target;
     currentPlayer = redoMove.shape;
 
-    return playMoveBase(redoMove.path, rootGrid, redoMove.shape);
+    return playMoveBase(redoMove.path, redoMove.shape);
 }
 
 bool GameState::saveState(const std::string& filename) const {
@@ -248,14 +176,14 @@ bool GameState::saveState(const std::string& filename) const {
     }
 }
 
-bool GameState::loadState(const std::string& filename, GridLogic& rootGrid) {
+bool GameState::loadState(const std::string& filename) {
     std::ifstream inFile(filename);
     if (!inFile.is_open()) {
         return false;
     }
 
     reset();
-    rootGrid.resetGrid();
+    grid.grid_root.resetGrid();
 
     std::string line;
     std::string section;
@@ -299,7 +227,7 @@ bool GameState::loadState(const std::string& filename, GridLogic& rootGrid) {
                     }
                 }
 
-                if (!playMove(path, rootGrid, shape)) {
+                if (!playMove(path, shape)) {
                     success = false;
                 }
             }

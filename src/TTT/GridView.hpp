@@ -77,7 +77,7 @@ public:
         }
 
         // Dessin de la forme globale si la grille est gagnée
-        if (grid.isWinningShape()) {
+        if (grid.isLockedShaped()) {
             drawShape(draw_list, pos, size, grid.getShape());
         }
     }
@@ -199,10 +199,7 @@ private:
     }
 
     void drawDrawSymbol(ImDrawList* draw_list, const ImVec2& pos, const ImVec2 size) {
-        ImVec2 center = {pos.x + size.x/2, pos.y + size.y/2};
-        draw_list->AddLine(
-            ImVec2(center.x - size.x/3, center.y),
-            ImVec2(center.x + size.x/3, center.y),
-            IM_COL32(255, 255, 255, 255), 3.0f);
+        ImU32 bg_color = IM_COL32(10, 10, 10, 150);
+        draw_list->AddRectFilled(pos, pos + size, bg_color, 4.0f);
     }
 };

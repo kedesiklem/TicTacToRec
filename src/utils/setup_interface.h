@@ -21,7 +21,7 @@ namespace {
         ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
         
         ImGuiID dock_main = dockspace_id;
-        ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, 0.2f, nullptr, &dock_main);
+        ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, 0.3f, nullptr, &dock_main);
         
         ImGui::DockBuilderDockWindow("Game", dock_main);
         ImGui::DockBuilderDockWindow("Options", dock_right);
@@ -56,7 +56,7 @@ namespace {
         }
     };
 
-    void show_game_window(GridLogic& mainGrid, GameState& gameState) {
+    void show_game_window(GameState& gameState) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoScrollbar);
         
@@ -67,13 +67,12 @@ namespace {
         const ImVec2 marging = {30,30};
         
         // Création de la vue avec le ratio contrôlé par le slider
-        GridView gridView(mainGrid, .98f);
 
-        gridView.update(window_pos + marging, ImVec2{min_size, min_size} - (marging * 2));
+        gameState.grid.update(window_pos + marging, ImVec2{min_size, min_size} - (marging * 2));
 
-        gameState.playTurn(gridView);
+        gameState.playTurn();
 
-        gridView.draw(gameState.targetSubGridPath);
+        gameState.grid.draw(gameState.targetSubGridPath);
         
         ImGui::End();
         ImGui::PopStyleVar();

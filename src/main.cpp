@@ -7,7 +7,7 @@
 #include <setup_shortcut.h>
 
 #define GRID_SIZE 3
-#define GRID_REC 0
+#define GRID_REC 1
 
 int main() {
     // Initialisation GLFW
@@ -45,14 +45,16 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialisation jeu
-    GridLogic mainGrid(GRID_SIZE, GRID_SIZE, GRID_REC);
-    GameState gameState;
+    GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
+    GridView gridV(grid, 0.985);
+    MonteCarloBot bot;
+    GameState gameState(gridV, bot);
     std::stringstream str;
 
     LoadFonts(io, 40);
 
     ShortcutManager shortcutManager;
-    setupShortcuts(shortcutManager, window, mainGrid, gameState);
+    setupShortcuts(shortcutManager, window, gameState);
 
     // Boucle principale
     while (!glfwWindowShouldClose(window)) {
@@ -67,7 +69,7 @@ int main() {
         setup_interface();
         
         // Affichage des fenêtres
-        show_game_window(mainGrid, gameState);
+        show_game_window(gameState);
         show_options_window(gameState);
         
         // Fin de la fenêtre de docking principale

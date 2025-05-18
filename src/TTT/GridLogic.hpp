@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <iostream>
-
+#include <cmath>
 
 
 template <typename T>
@@ -81,8 +81,27 @@ class GridLogic {
 
         std::vector<Path> getAvailableMove(const Path& target = {}, Path currentPath = {}) const;
 
-        friend std::ostream& operator<<(std::ostream& os, const GridShape& shape);
+        friend std::ostream& operator<<(std::ostream& os, const GridLogic& grid);
     };
 
-std::ostream& operator<<(std::ostream& os, const GridShape& shape);
-std::ostream& operator<<(std::ostream& os, const Path& path);
+template<typename T>
+inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v){
+    os << "[";
+    for(size_t i=0; i<v.size(); ++i){
+            if (i != 0) os << ";";
+            os << v[i];
+    }
+    os << "]";
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const GridShape& shape){ 
+    os << GridLogic::GridShapeToString(shape);
+    return os;
+};
+
+inline std::ostream& operator<<(std::ostream& os, const GridLogic& grid){
+    os << grid.currentShape;
+    if(!grid.subGrids.empty())
+        os << grid.subGrids;
+};
