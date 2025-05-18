@@ -1,166 +1,53 @@
-#include "GameState.h"
+#include "GameState.hpp"
+#include "GridView.hpp"
 
-
-GridShape defaultPlayer(){
+GridShape defaultPlayer() {
     return GridShape::CROSS;
 }
 
-bool isGridLocked(Grid& grid) {
-    if (grid.isLockedShaped()) {
-        grid.setHovered(false);
-        return true;
-    }
+bool GameState::isBotPlayer(GridShape shape) {
     return false;
 }
 
-bool isMouseOverGrid(const ImVec2& window_pos, const Grid& grid) {
-    ImVec2 mouse_pos = ImGui::GetMousePos();
-    size_t cellSize = grid.getCellSize();
-
-    return (mouse_pos.x >= window_pos.x && mouse_pos.x < window_pos.x + cellSize &&
-            mouse_pos.y >= window_pos.y && mouse_pos.y < window_pos.y + cellSize);
-}
-
-ImVec2 calculateSubGridPosition(const ImVec2& window_pos, const Grid& grid, int r, int c) {
-    size_t cellSize = grid.getCellSize();
-    size_t padding = grid.getPadding();
-
-    return ImVec2(
-        window_pos.x + c * (cellSize + padding),
-        window_pos.y + r * (cellSize + padding)
-    );
-}
-
-void checkAllVictories(Grid& grid) {
-    if (grid.isLeaf()) return;
-
-    for (int r = 0; r < grid.getRows(); ++r) {
-        for (int c = 0; c < grid.getCols(); ++c) {
-            checkAllVictories(grid.getSubGrid(r, c));
-        }
-    }
-    grid.setShape(grid.checkVictory());
-};
-
-bool GameState::isBotPlayer(GridShape shape){
-    // return shape == GridShape::CIRCLE;
-    return false;
-};
-
-// wrapper pour update
-bool GameState::update(const ImVec2& window_pos, Grid& grid){
-    std::vector<int> currentPath = {};
-    std::vector<int> finalPath = {};
-    bool result;
-    if(isBotPlayer(currentPlayer)){
-        result = playBot(window_pos, grid, currentPath, finalPath, 0);
-    }else{
-        result = update(window_pos, grid, currentPath, finalPath, 0);
-        if(result){
-            redoHistory.clear();
-        }
-    }
-    return result;
-};
-
-bool GameState::playBot(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, 
-    std::vector<int>& finalPath, int recursionLevel){
-        std::vector<std::vector<int>> moves = grid.getValidMoves(targetSubGridPath);
-        playMove(moves[0], currentPlayer, grid);
-    };
-
-bool GameState::update(const ImVec2& window_pos, Grid& grid, std::vector<int> currentPath, 
+bool GameState::playBot(const ImVec2& window_pos, GridLogic& grid, std::vector<int> currentPath, 
     std::vector<int>& finalPath, int recursionLevel) {
-    if (isGridLocked(grid)) {
-        return false;
-    }
+    std::vector<std::vector<int>> moves = grid.getValidMoves(targetSubGridPath);
+    return grid.playMove(moves[0], currentPlayer);
+}
 
-    if (grid.isLeaf()) {
-        return handleLeafGrid(window_pos, grid, currentPath, finalPath);
-    }
+bool GameState::playMove(std::vector<int> path, GridLogic& grid)
+{
+    playMove(path, grid, currentPlayer);
+}
 
-    return handleNonLeafGrid(window_pos, grid, currentPath, finalPath, recursionLevel);
-};
+bool GameState::playMove(std::vector<int> path, GridLogic& grid, GridShape player)
+{
+    redoHistory.clear();
+    return playMoveBase(path, grid, player);
+}
 
-bool GameState::handleLeafGrid(const ImVec2& window_pos, Grid& grid, 
-            std::vector<int>& currentPath, std::vector<int>& finalPath) {
-    grid.setHovered(false);
-
-    if (isMouseOverGrid(window_pos, grid) && grid.getShape() == GridShape::NONE) {
-        grid.setHovered(true);
-
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            grid.setShape(currentPlayer);
-            finalPath = currentPath;
+bool GameState::playMoveBase(std::vector<int> path, GridLogic& grid, GridShape player)
+{
+    if(starts_with(path, targetSubGridPath))
+        if(grid.playMove(path, player)){
+            endTurn(path, grid);
             return true;
         }
-    }
     return false;
-};
+}
 
-bool GameState::handleNonLeafGrid(const ImVec2& window_pos, Grid& grid, 
-               std::vector<int> currentPath, std::vector<int>& finalPath, 
-               int recursionLevel) {
-    bool updated = false;
-
-    for (int r = 0; r < grid.getRows(); ++r) {
-        for (int c = 0; c < grid.getCols(); ++c) {
-            if (shouldSkipSubGrid(grid, r, c, recursionLevel))
-                continue;
-
-            ImVec2 subGridPos = calculateSubGridPosition(window_pos, grid, r, c);
-            currentPath.push_back(r * grid.getCols() + c);
-
-            if (updateSubGrid(subGridPos, grid, r, c, currentPath, finalPath, recursionLevel)) {
-            grid.setShape(grid.checkVictory());
-            updated = true;
-            }
-
-            currentPath.pop_back();
-        }
-    }
-
-    if (recursionLevel == 0 && updated) {
-        endTurn(finalPath, grid);
-    }
-
-    return updated;
-};
-
-bool GameState::shouldSkipSubGrid(const Grid& grid, int r, int c, int recursionLevel) const {
-    if (targetSubGridPath.empty() || recursionLevel >= targetSubGridPath.size()) {
-        return false;
-    }
-
-    int index = targetSubGridPath[recursionLevel];
-    int target_r = index / grid.getCols();
-    int target_c = index % grid.getCols();
-
-    return (r != target_r || c != target_c);
-};
-
-bool GameState::updateSubGrid(const ImVec2& pos, Grid& grid, int r, int c, 
-           std::vector<int>& currentPath, std::vector<int>& finalPath, 
-           int recursionLevel) {
-    return update(pos, grid.getSubGrid(r, c), currentPath, finalPath, recursionLevel + 1);
-};
-
-void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, Grid& grid) {
-    // Changement de joueur
+void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, GridLogic& grid) {
     moveHistory.push_back({lastPlayedSubGridPath, targetSubGridPath, currentPlayer});
-    currentPlayer = nextShapePlayable(currentPlayer);
-
+    currentPlayer = GridLogic::nextShapePlayable(currentPlayer);
 
     if (lastPlayedSubGridPath.empty()) {
         targetSubGridPath.clear();
         return;
     }
 
-    // On commence par la grille cible complète
     targetSubGridPath = lastPlayedSubGridPath;
     targetSubGridPath.erase(targetSubGridPath.begin());
     
-    // On cherche le premier niveau avec une shape non-NONE en partant de la racine
     std::vector<int> currentPath;
     for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
         currentPath.push_back(targetSubGridPath[i]);        
@@ -170,49 +57,46 @@ void GameState::endTurn(const std::vector<int> lastPlayedSubGridPath, Grid& grid
             break;
         }
     }
-};
+}
 
 void GameState::reset() {
     currentPlayer = defaultPlayer();
     targetSubGridPath.clear();
     moveHistory.clear();
     redoHistory.clear();
-};
+}
 
-bool GameState::undoLastMove(Grid& rootGrid) {
+bool GameState::undoLastMove(GridLogic& rootGrid) {
     if (moveHistory.empty()) return false;
 
     Move lastMove = moveHistory.back();
-
     redoHistory.push_back(lastMove);
     moveHistory.pop_back();
 
     targetSubGridPath = lastMove.target;
     currentPlayer = lastMove.shape;
 
-    // Parcourir la grille selon le chemin pour trouver la cellule à annuler
-    Grid* currentGrid = &rootGrid;
+
+    GridLogic* currentGrid = &rootGrid;
+    currentGrid->setShape(GridShape::NONE);
+
     for (size_t i = 0; i < lastMove.path.size(); ++i) {
         int index = lastMove.path[i];
         int rows = currentGrid->getRows();
         int cols = currentGrid->getCols();
         int r = index / cols;
         int c = index % cols;
+
+        currentGrid = &currentGrid->getSubGrid(r, c);
+        currentGrid->setShape(GridShape::NONE);
         
-        if (i == lastMove.path.size() - 1) {
-            // Dernière étape du chemin - restaurer la forme
-            currentGrid->getSubGrid(r, c).setShape(GridShape::NONE);
-        } else {
-            currentGrid = &currentGrid->getSubGrid(r, c);
-        }
+
     }
 
-    checkAllVictories(rootGrid);
-    
     return true;
-};
+}
 
-bool GameState::redoLastMove(Grid& rootGrid) {
+bool GameState::redoLastMove(GridLogic& rootGrid) {
     if (redoHistory.empty()) return false;
 
     Move redoMove = redoHistory.back();
@@ -221,8 +105,8 @@ bool GameState::redoLastMove(Grid& rootGrid) {
     targetSubGridPath = redoMove.target;
     currentPlayer = redoMove.shape;
 
-    return playMove(redoMove.path, redoMove.shape, rootGrid);
-};
+    return playMoveBase(redoMove.path, rootGrid, redoMove.shape);
+}
 
 bool GameState::saveState(const std::string& filename) const {
     std::ofstream outFile(filename);
@@ -231,14 +115,10 @@ bool GameState::saveState(const std::string& filename) const {
     }
 
     try {
-        // En-tête avec version
         outFile << "# Ultimate Tic-Tac-Toe Game State\n";
-
-        // Move history
         outFile << "[MoveHistory]\n";
         outFile << "# Format: PATH>SHAPE@TARGET (SHAPE uses enum names)\n";
         for (const auto& move : moveHistory) {
-            // Path
             if (move.path.empty()) {
                 outFile << "root";
             } else {
@@ -247,11 +127,7 @@ bool GameState::saveState(const std::string& filename) const {
                     outFile << move.path[i];
                 }
             }
-
-            // Shape (utilise le nom de l'enum)
-            outFile << ">" << GridShapeToString(move.shape);
-
-            // Target
+            outFile << ">" << GridLogic::GridShapeToString(move.shape);
             if (!move.target.empty()) {
                 outFile << "@";
                 for (size_t i = 0; i < move.target.size(); ++i) {
@@ -263,7 +139,6 @@ bool GameState::saveState(const std::string& filename) const {
         }
         outFile << "\n";
 
-        // Redo history
         outFile << "[RedoHistory]\n";
         for (const auto& move : redoHistory) {
             if (move.path.empty()) {
@@ -274,7 +149,7 @@ bool GameState::saveState(const std::string& filename) const {
                     outFile << move.path[i];
                 }
             }
-            outFile << ">" << GridShapeToString(move.shape);
+            outFile << ">" << GridLogic::GridShapeToString(move.shape);
             if (!move.target.empty()) {
                 outFile << "@";
                 for (size_t i = 0; i < move.target.size(); ++i) {
@@ -287,18 +162,16 @@ bool GameState::saveState(const std::string& filename) const {
 
         return outFile.good();
     } catch (...) {
-        std::cout << "Fail to save" << std::endl;
         return false;
     }
-};
+}
 
-bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
+bool GameState::loadState(const std::string& filename, GridLogic& rootGrid) {
     std::ifstream inFile(filename);
     if (!inFile.is_open()) {
         return false;
     }
 
-    // Reset game state and grid
     reset();
     rootGrid.resetGrid();
 
@@ -308,31 +181,23 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
 
     try {
         while (std::getline(inFile, line)) {
-            // Skip comments and empty lines
-            if (line.empty() || line[0] == '#') {
-                continue;
-            }
+            if (line.empty() || line[0] == '#') continue;
 
-            // Check for section headers
             if (line[0] == '[' && line.back() == ']') {
                 section = line.substr(1, line.size() - 2);
                 continue;
             }
 
-
             if (section == "MoveHistory") {
-                // Format: PATH>SHAPE@TARGET or PATH>SHAPE
                 size_t shapePos = line.find('>');
                 if (shapePos == std::string::npos) continue;
 
                 std::string pathStr = line.substr(0, shapePos);
                 std::string rest = line.substr(shapePos + 1);
                 
-                // Parse shape
                 size_t targetPos = rest.find('@');
-                GridShape shape = StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
+                GridShape shape = GridLogic::StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
                 
-                // Parse path
                 std::vector<int> path;
                 if (pathStr != "root") {
                     std::istringstream pathIss(pathStr);
@@ -342,7 +207,6 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
                     }
                 }
 
-                // Parse target if exists
                 std::vector<int> target;
                 if (targetPos != std::string::npos) {
                     std::string targetStr = rest.substr(targetPos + 1);
@@ -353,24 +217,20 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
                     }
                 }
 
-                // Play the move
-                if (!playMove(path, shape, rootGrid)) {
+                if (!playMove(path, rootGrid, shape)) {
                     success = false;
                 }
             }
             else if (section == "RedoHistory") {
-                // Same format as MoveHistory
                 size_t shapePos = line.find('>');
                 if (shapePos == std::string::npos) continue;
 
                 std::string pathStr = line.substr(0, shapePos);
                 std::string rest = line.substr(shapePos + 1);
                 
-                // Parse shape
                 size_t targetPos = rest.find('@');
-                GridShape shape = StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
+                GridShape shape = GridLogic::StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
                 
-                // Parse path
                 std::vector<int> path;
                 if (pathStr != "root") {
                     std::istringstream pathIss(pathStr);
@@ -380,7 +240,6 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
                     }
                 }
 
-                // Parse target if exists
                 std::vector<int> target;
                 if (targetPos != std::string::npos) {
                     std::string targetStr = rest.substr(targetPos + 1);
@@ -391,7 +250,6 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
                     }
                 }
 
-                // Store in redo history
                 redoHistory.push_back({path, target, shape});
             }
         }
@@ -400,77 +258,31 @@ bool GameState::loadState(const std::string& filename, Grid& rootGrid) {
     }
 
     return success && inFile.eof();
-};
+}
 
-//Duplication par rapport à update
-bool GameState::playMove(const std::vector<int>& path, GridShape player, Grid& rootGrid) {
-
-    if (path.empty()) {
-        return false;
-    }
-
-    Grid* targetGrid = &rootGrid;
-    for (size_t i = 0; i < path.size(); ++i) {
-        int index = path[i];
-        int rows = targetGrid->getRows();
-        int cols = targetGrid->getCols();
-        
-        if (index < 0 || index >= rows * cols) {
-            return false;
-        }
-
-        int r = index / cols;
-        int c = index % cols;
-
-        if (i == path.size() - 1) {
-            if (targetGrid->getSubGrid(r, c).getShape() != GridShape::NONE || 
-                targetGrid->getSubGrid(r, c).isLockedShaped()) {
-                return false;
-            }
-
-            targetGrid->getSubGrid(r, c).setShape(player);
-            
-            endTurn(path, rootGrid);
-
-            checkAllVictories(rootGrid);
-            
-            return true;
-        } else {
-            targetGrid = &targetGrid->getSubGrid(r, c);
-        }
-    }
-
-    return false;
-};
-
-std::ostream& operator<<(std::ostream& os, const Move& move){
+std::ostream& operator<<(std::ostream& os, const Move& move) {
     os << move.shape << " ";
-    for(size_t i=0; i<move.path.size() - 1; ++i){
+    for(size_t i = 0; i < move.path.size() - 1; ++i) {
         os << move.path[i] << ",";
     }
-    if(move.path.size() > 0){
+    if(move.path.size() > 0) {
         os << move.path[move.path.size() - 1];
     }
-
     return os;
-};
+}
 
-std::ostream &operator<<(std::ostream &os, const GameState &gameState)
-{
+std::ostream& operator<<(std::ostream& os, const GameState& gameState) {
     os << "GameState: " << std::endl;
     os << "Current Player: " << gameState.currentPlayer << std::endl;
     os << "Target SubGrid Path: ";
-    for (const auto &path : gameState.targetSubGridPath)
-    {
+    for (const auto& path : gameState.targetSubGridPath) {
         os << path << " ";
     }
     os << std::endl;
 
     os << "[Move History][" << gameState.moveHistory.size() << "]" << std::endl;
-    for (const auto &move : gameState.moveHistory)
-    {
+    for (const auto& move : gameState.moveHistory) {
         os << "    " << move << " " << std::endl;
-        ;
     }
     return os;
-};
+}

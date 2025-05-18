@@ -1,0 +1,10 @@
+# Ultimate Tic-Tac-Toe Game State
+[MoveHistory]
+# Format: PATH>SHAPE@TARGET (SHAPE uses enum names)
+8.0>CROSS
+0.8>CIRCLE@0
+8.1>CROSS@8
+
+[RedoHistory]
+8.2>CROSS@8
+1.8>CIRCLE@1

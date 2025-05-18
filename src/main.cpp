@@ -1,3 +1,6 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
+
+
 #include <config.h>
 #include <iostream>
 #include <setup_interface.h>
@@ -7,7 +10,6 @@
 #define GRID_REC 1
 
 int main() {
-
     // Initialisation GLFW
     if (!glfwInit()) {
         std::cerr << "Échec de l'initialisation GLFW" << std::endl;
@@ -43,18 +45,16 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialisation jeu
-    Grid mainGrid(GRID_SIZE, GRID_SIZE, GRID_REC, 150.f, 20.f);
+    GridLogic mainGrid(GRID_SIZE, GRID_SIZE, GRID_REC);
     GameState gameState;
     std::stringstream str;
 
     LoadFonts(io, 40);
 
     ShortcutManager shortcutManager;
-
     setupShortcuts(shortcutManager, window, mainGrid, gameState);
 
-
-    // Boucle principale modifiée
+    // Boucle principale
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         
@@ -64,11 +64,11 @@ int main() {
         ImGui::NewFrame();
 
         // Configuration de l'interface
-        setup_interface(); // Fonction existante pour le docking
+        setup_interface();
         
         // Affichage des fenêtres
         show_game_window(mainGrid, gameState);
-        show_options_window(mainGrid, gameState);
+        show_options_window(gameState);
         
         // Fin de la fenêtre de docking principale
         ImGui::End();

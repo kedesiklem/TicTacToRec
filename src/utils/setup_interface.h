@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GameState.hpp"
+
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -10,87 +12,80 @@
 #include <iostream>
 #include <sstream>
 
-#include <GameState.h>
-
 #define SAVE_WIN_FILE "win.ttt"
 
 namespace {
 
-    void setup_init(ImGuiID dockspace_id){
-        ImGui::DockBuilderRemoveNode(dockspace_id); // Clear any previous layout
+    void setup_init(ImGuiID dockspace_id) {
+        ImGui::DockBuilderRemoveNode(dockspace_id);
         ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_AutoHideTabBar);
         
         ImGuiID dock_main = dockspace_id;
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, 0.2f, nullptr, &dock_main);
         
-        // Définir les zones de docking
         ImGui::DockBuilderDockWindow("Game", dock_main);
         ImGui::DockBuilderDockWindow("Options", dock_right);
         ImGui::DockBuilderFinish(dockspace_id);
     }
 
-    void setup_interface(){
-            // Configuration de l'espace de docking
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->Pos);
-            ImGui::SetNextWindowSize(viewport->Size);
-            ImGui::SetNextWindowViewport(viewport->ID);
-            
+    void setup_interface() {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        
+        ImGuiWindowFlags window_flags = 
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-            ImGuiWindowFlags window_flags = 
-                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-    
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-            
-            // Création de la fenêtre principale de docking
-            ImGui::Begin("DockSpace", nullptr, window_flags);
-            ImGui::PopStyleVar(3);
-            
-            // Création de l'espace de docking
-            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-            
-            // Configuration initiale du docking (une seule fois)
-            static bool first_time = true;
-            if (first_time) {
-                first_time = false;
-                
-                setup_init(dockspace_id);
-            }
-        };
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        
+        ImGui::Begin("DockSpace", nullptr, window_flags);
+        ImGui::PopStyleVar(3);
+        
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+        
+        static bool first_time = true;
+        if (first_time) {
+            first_time = false;
+            setup_init(dockspace_id);
+        }
+    };
 
-    void show_game_window(Grid& mainGrid, GameState& gameState) {
+    void show_game_window(GridLogic& mainGrid, GameState& gameState) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        ImGui::Begin("Game", nullptr, ImGuiWindowFlags_None);
+        ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoScrollbar);
         
         ImVec2 window_pos = ImGui::GetCursorScreenPos();
         ImVec2 window_size = ImGui::GetContentRegionAvail();
+
+        float min_size = std::min(window_size.x, window_size.y);
+        const ImVec2 marging = {30,30};
         
-        mainGrid.setWindowSize(window_size.x, window_size.y);
-        if(gameState.update(window_pos, mainGrid)){
-            //Si le coup est bien joué on check s'il y a un gagnant et le cas échéant on enregistre la game dans un fichier
-            if(mainGrid.isWinningShape())
-                    gameState.saveState(SAVE_WIN_FILE);
+        // Création de la vue avec le ratio contrôlé par le slider
+        GridView gridView(mainGrid, .98f);
+
+        gridView.update(window_pos + marging, ImVec2{min_size, min_size} - (marging * 2));
+        auto path = gridView.handleGridInteraction();
+        if(path){
+            gameState.playMove(path.value(), mainGrid);
         }
-        mainGrid.getGridFromPath(gameState.targetSubGridPath).setShape(gameState.currentPlayer);
-        mainGrid.draw(window_pos, gameState.targetSubGridPath);
+        gridView.draw(gameState.targetSubGridPath);
         
         ImGui::End();
         ImGui::PopStyleVar();
-    };
+    }
 
-    // Nouvelle fonction pour la fenêtre d'options
-    void show_options_window(Grid& mainGrid, GameState& gameState) {
+    void show_options_window(GameState& gameState) {
         ImGui::Begin("Options", nullptr);
         {
             ImGui::Text("Paramètres du jeu");
             ImGui::Separator();
             if (ImGui::Button("Réinitialiser")) {
-                mainGrid.resetGrid();
                 gameState.reset();
             }
             
@@ -137,4 +132,4 @@ namespace {
         ImGui::End();
     };
 
-}// namespace
+} // namespace
