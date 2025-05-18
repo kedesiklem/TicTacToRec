@@ -22,6 +22,8 @@ public:
 
     static bool isBotPlayer(GridShape shape);
     bool playTurn(GridView& gridView);
+    bool playMonteCarloBot(GridLogic& grid);
+    double evaluateMoveWithMonteCarlo(const Path& move, GridLogic& grid, int simulations);
     bool playBot(GridLogic& grid);
     bool playMove(Path path, GridLogic& grid, GridShape player);
     bool playMove(Path path, GridLogic& grid);

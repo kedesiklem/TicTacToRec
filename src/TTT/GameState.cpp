@@ -24,12 +24,77 @@ bool GameState::playTurn(GridView& gridView){
     }
 }
 
-bool GameState::playBot(GridLogic& grid) {
+bool GameState::playMonteCarloBot(GridLogic& grid) {
     std::vector<Path> moves = grid.getAvailableMove(targetSubGridPath);
-    if(!moves.empty())
-        return playMove(moves[rand() % (moves.size() - 1)], grid);
-        
-    return false;
+    if (moves.empty()) return false;
+
+    // Évalue chaque coup possible avec Monte Carlo
+    Path bestMove;
+    double bestScore = -1.0;
+
+    for (const auto& move : moves) {
+        double score = evaluateMoveWithMonteCarlo(move, grid, 1000);
+        if (score > bestScore) {
+            bestScore = score;
+            bestMove = move;
+        }
+    }
+
+    return playMove(bestMove, grid);
+}
+
+double GameState::evaluateMoveWithMonteCarlo(const Path& move, GridLogic& grid, int simulations) {
+    int wins = 0;
+    GridLogic tempGrid = grid; // Copie de la grille pour simulation
+
+    // Joue le coup initial
+    tempGrid.playMove(move, currentPlayer);
+
+    // Simule 'simulations' parties aléatoires
+    for (int i = 0; i < simulations; ++i) {
+        GridLogic simulationGrid = tempGrid; // Copie pour chaque simulation
+        GridShape currentSimPlayer = GridLogic::nextShapePlayable(currentPlayer);
+        bool gameOver = false;
+
+        while (!gameOver) {
+            std::vector<Path> availableMoves = simulationGrid.getAvailableMove({});
+            if (availableMoves.empty()) {
+                gameOver = true;
+                break;
+            }
+
+            // Joue un coup aléatoire
+            Path randomMove = availableMoves[rand() % availableMoves.size()];
+            simulationGrid.playMove(randomMove, currentSimPlayer);
+
+            // Vérifie si la partie est terminée
+            GridShape result = simulationGrid.checkVictory();
+
+            int score = 0;
+            switch (result){
+                case GridShape::CIRCLE :
+                    score = 1;
+                    break;
+                case GridShape::CROSS :
+                    score = -1;
+                    break;
+            }
+
+            wins += score;
+
+            if (result != GridShape::NONE) {
+                gameOver = true;
+            }
+
+            currentSimPlayer = GridLogic::nextShapePlayable(currentSimPlayer);
+        }
+    }
+
+    return static_cast<double>(wins) / simulations;
+}
+
+bool GameState::playBot(GridLogic& grid) {
+    return playMonteCarloBot(grid);
 }
 
 bool GameState::playMove(Path path, GridLogic& grid)

@@ -7,7 +7,7 @@
 #include <setup_shortcut.h>
 
 #define GRID_SIZE 3
-#define GRID_REC 1
+#define GRID_REC 0
 
 int main() {
     // Initialisation GLFW
