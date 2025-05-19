@@ -5,8 +5,7 @@ GridShape defaultPlayer() {
 }
 
 bool GameState::isBotPlayer(GridShape shape) {
-    // return shape == GridShape::CIRCLE;
-    return false;
+    return (autoMode);
 }
 
 bool GameState::playMove(Path path)
@@ -30,13 +29,15 @@ bool GameState::playMoveBase(Path path, GridShape player)
     return false;
 }
 
-bool GameState::playBot() {
-    return playMove(bot.getMonteCarloBotMove(grid.grid_root, currentPlayer, targetSubGridPath));
+bool GameState::playRandom() {
+    // return playMove(bot.getMonteCarloBotMove(grid.grid_root, currentPlayer, targetSubGridPath));
+    auto moves = grid.grid_root.getAvailableMove(targetSubGridPath);
+    return playMove(moves[rand() % moves.size()], currentPlayer);
 }
 
 bool GameState::playTurn(){
     if(isBotPlayer(currentPlayer)){
-        return playBot();
+        return playRandom();
     }else{
         auto path = grid.handleGridInteraction();
         if(path){

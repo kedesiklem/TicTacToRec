@@ -6,10 +6,11 @@
 #include <setup_interface.h>
 #include <setup_shortcut.h>
 
-#define GRID_SIZE 3
+#define GRID_SIZE 5
 #define GRID_REC 1
 
 int main() {
+
     // Initialisation GLFW
     if (!glfwInit()) {
         std::cerr << "Échec de l'initialisation GLFW" << std::endl;
@@ -47,14 +48,14 @@ int main() {
     // Initialisation jeu
     GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
     GridView gridV(grid, 0.985);
-    MonteCarloBot bot;
-    GameState gameState(gridV, bot);
+    GameModeManager gameMode(gridV);
+    gameMode.changeGameMode("RandomStart");
     std::stringstream str;
 
     LoadFonts(io, 40);
 
     ShortcutManager shortcutManager;
-    setupShortcuts(shortcutManager, window, gameState);
+    setupShortcuts(shortcutManager, window, gameMode);
 
     // Boucle principale
     while (!glfwWindowShouldClose(window)) {
@@ -66,11 +67,7 @@ int main() {
         ImGui::NewFrame();
 
         // Configuration de l'interface
-        setup_interface();
-        
-        // Affichage des fenêtres
-        show_game_window(gameState);
-        show_options_window(gameState);
+        setup_interface(gameMode);
         
         // Fin de la fenêtre de docking principale
         ImGui::End();

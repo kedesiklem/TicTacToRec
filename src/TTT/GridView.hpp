@@ -160,16 +160,16 @@ private:
         
         if(locked){
             ImU32 bg_color =    (grid.getShape() == GridShape::CROSS) ? IM_COL32(255, 0, 0, 50) : 
-                                (grid.getShape() == GridShape::CIRCLE) ? IM_COL32(0, 0, 255, 50) : 
-                                IM_COL32(100, 100, 100, 50);
+                                (grid.getShape() == GridShape::CIRCLE) ? IM_COL32(0, 0, 255, 100) : 
+                                IM_COL32(100, 100, 100, 255);  // Gris Locked
             draw_list->AddRectFilled(pos, pos + size, bg_color, 4.0f);
         }else{
             // Couleur de fond
-            ImU32 bg_color = IM_COL32(70, 70, 70, 255);  // Gris foncé
+            ImU32 bg_color = IM_COL32(150, 150, 150, 255);  // Gris Base
             
             // Surcharge si hover
             if (isHovered(pos, size)){
-                bg_color = IM_COL32(100, 100, 100, 255);  // Gris plus clair
+                bg_color = IM_COL32(255, 255, 255, 255);  // Gris Hovered
             }
 
             draw_list->AddRectFilled(pos, pos + size, bg_color, 4.0f);

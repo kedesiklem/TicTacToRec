@@ -15,24 +15,25 @@ struct Move {
 class GameState {
 public:
 
-    MonteCarloBot& bot;
+    bool autoMode = false;
+
     GridView& grid;
     GridShape currentPlayer;
     Path targetSubGridPath;
     std::vector<Move> moveHistory;
     std::vector<Move> redoHistory;
 
-    GameState(GridView& grid, MonteCarloBot& bot) : grid(grid), bot(bot) { reset(); }
+    GameState(GridView& grid) : grid(grid) { reset(); }
 
-    static bool isBotPlayer(GridShape shape);
+    bool isBotPlayer(GridShape shape);
 
     bool playMove(Path path, GridShape player);
     bool playMove(Path path);
     bool playMoveBase(Path path, GridShape player);
 
-    bool playBot();
+    bool playRandom();
 
-    bool playTurn();
+    virtual bool playTurn();
     
 
     void endTurn(const Path lastPlayedSubGridPath);

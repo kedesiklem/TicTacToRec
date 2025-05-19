@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameState.hpp"
+#include "GameModeManager.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <unistd.h>
 
 #define SAVE_WIN_FILE "win.ttt"
 
@@ -24,37 +25,11 @@ namespace {
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, 0.3f, nullptr, &dock_main);
         
         ImGui::DockBuilderDockWindow("Game", dock_main);
-        ImGui::DockBuilderDockWindow("Options", dock_right);
+        ImGui::DockBuilderDockWindow("Infos", dock_right);
+        ImGui::DockBuilderDockWindow("Game Mode", dock_right);
+        
         ImGui::DockBuilderFinish(dockspace_id);
     }
-
-    void setup_interface() {
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
-        ImGui::SetNextWindowViewport(viewport->ID);
-        
-        ImGuiWindowFlags window_flags = 
-            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        
-        ImGui::Begin("DockSpace", nullptr, window_flags);
-        ImGui::PopStyleVar(3);
-        
-        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
-        
-        static bool first_time = true;
-        if (first_time) {
-            first_time = false;
-            setup_init(dockspace_id);
-        }
-    };
 
     void show_game_window(GameState& gameState) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -70,18 +45,20 @@ namespace {
 
         gameState.grid.update(window_pos + marging, ImVec2{min_size, min_size} - (marging * 2));
 
-        gameState.playTurn();
-
-        gameState.grid.draw(gameState.targetSubGridPath);
-        
+        while(!gameState.grid.grid_root.isLockedShaped()){
+            gameState.playTurn();
+        }
+    
+        gameState.grid.draw(gameState.targetSubGridPath);        
         ImGui::End();
         ImGui::PopStyleVar();
     }
 
-    void show_options_window(GameState& gameState) {
-        ImGui::Begin("Options", nullptr);
+    void show_infos_window(GameState& gameState) {
+        ImGui::Begin("Infos", nullptr);
         {
-            ImGui::Text("Paramètres du jeu");
+            ImGui::Text("AutoMove : %s", gameState.autoMode ? "On" : "Off");
+
             ImGui::Separator();
             if (ImGui::Button("Réinitialiser")) {
                 gameState.reset();
@@ -97,7 +74,7 @@ namespace {
             ImGui::Separator();        
             ImGui::Columns(2, "historyColumns", false);
 
-            ImGui::Text("[History]");
+            ImGui::Text("[History | %ld]", gameState.moveHistory.size());
             ImGui::NextColumn();
             ImGui::Text("[Redo]");
             ImGui::NextColumn();
@@ -128,6 +105,54 @@ namespace {
             ImGui::Columns(1);
         }
         ImGui::End();
+    };
+
+    void show_mode_window(GameModeManager& modeManager) {
+        ImGui::Begin("Game Mode");
+        
+        // Afficher la liste des modes disponibles
+        const auto& modes = modeManager.getAvailableModes();
+        for (const auto& [name, _] : modes) {
+            if (ImGui::Button(name.c_str())) {
+                modeManager.changeGameMode(name);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Switch to %s mode", name.c_str());
+            }
+        }
+        
+        ImGui::End();
+    };
+
+    void setup_interface(GameModeManager& modeManager) {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        
+        ImGuiWindowFlags window_flags = 
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        
+        ImGui::Begin("DockSpace", nullptr, window_flags);
+        ImGui::PopStyleVar(3);
+        
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+        
+        static bool first_time = true;
+        if (first_time) {
+            first_time = false;
+            setup_init(dockspace_id);
+        }
+        show_game_window(modeManager());
+        show_mode_window(modeManager);
+        show_infos_window(modeManager());
     };
 
 } // namespace

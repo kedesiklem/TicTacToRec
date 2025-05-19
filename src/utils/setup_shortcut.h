@@ -21,16 +21,24 @@ public:
 
 class GameFunctor : public Functor {
 protected:
-    GameState& gameState;
+    GameModeManager& gameState;
 public:
-    GameFunctor(GameState& state) : gameState(state) {}
+    GameFunctor(GameModeManager& state) : gameState(state) {}
 };
 
 class ResetGameFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override {
-        gameState.reset();
+        gameState().reset();
+    }
+};
+
+class ToggleAutoMode : public GameFunctor {
+public:
+    using GameFunctor::GameFunctor;
+    void exec() override {
+        gameState().autoMode = !gameState().autoMode;
     }
 };
 
@@ -38,8 +46,7 @@ class UndoMoveFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        gameState.undoLastMove();
-        gameState.undoLastMove();
+        gameState().undoLastMove();
     }
 };
 
@@ -47,8 +54,7 @@ class RedoMoveFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        gameState.redoLastMove();
-        gameState.redoLastMove();
+        gameState().redoLastMove();
     }
 };
 
@@ -56,7 +62,7 @@ class PrintValidMovesFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        auto validMove = gameState.grid.grid_root.getAvailableMove(gameState.targetSubGridPath);
+        auto validMove = gameState().grid.grid_root.getAvailableMove(gameState().targetSubGridPath);
         std::cout << "Valid Moves[" << validMove.size() << "]" << std::endl;
         for(auto move : validMove){
             std::cout << "[" << move << "]";
@@ -69,7 +75,7 @@ class SaveStateFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        gameState.saveState(SAVE_STATE);
+        gameState().saveState(SAVE_STATE);
     }
 };
 
@@ -77,30 +83,33 @@ class LoadStateFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        gameState.loadState(SAVE_STATE);
+        gameState().loadState(SAVE_STATE);
     }
 };
 
-void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, GameState& gameState) {
+void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, GameModeManager& gameMode) {
     
     shortcutManager.addShortcut({{ImGuiKey_Escape}}, 
         new CloseWindowFunctor(window), "Fermer la fenêtre");
 
     shortcutManager.addShortcut({{ImGuiKey_X, true}, {ImGuiKey_X, true}}, 
-        new ResetGameFunctor(gameState), "Réinitialiser le jeu");
+        new ResetGameFunctor(gameMode), "Réinitialiser le jeu");
 
     shortcutManager.addShortcut({{ImGuiKey_Z, true}}, 
-        new UndoMoveFunctor(gameState), "Annuler le dernier mouvement");
+        new UndoMoveFunctor(gameMode), "Annuler le dernier mouvement");
 
     shortcutManager.addShortcut({{ImGuiKey_Y, true}}, 
-        new RedoMoveFunctor(gameState), "Rétablir le dernier mouvement");
+        new RedoMoveFunctor(gameMode), "Rétablir le dernier mouvement");
 
     shortcutManager.addShortcut({{ImGuiKey_P}}, 
-        new PrintValidMovesFunctor(gameState), "Afficher les mouvements valides");
+        new PrintValidMovesFunctor(gameMode), "Afficher les mouvements valides");
     
     shortcutManager.addShortcut({{ImGuiKey_S, true}, {ImGuiKey_S, true}}, 
-        new SaveStateFunctor(gameState), "Sauvegarder l'état");
+        new SaveStateFunctor(gameMode), "Sauvegarder l'état");
 
     shortcutManager.addShortcut({{ImGuiKey_S, true, false, true}, {ImGuiKey_S, true, false, true}}, 
-        new LoadStateFunctor(gameState), "Charger l'état");
+        new LoadStateFunctor(gameMode), "Charger l'état");
+
+    shortcutManager.addShortcut({{ImGuiKey_B, true}}, 
+        new ToggleAutoMode(gameMode), "Toggle autoMode");
 }
