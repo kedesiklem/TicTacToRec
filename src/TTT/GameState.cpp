@@ -30,7 +30,6 @@ bool GameState::playMoveBase(Path path, GridShape player)
 }
 
 bool GameState::playRandom() {
-    // return playMove(bot.getMonteCarloBotMove(grid.grid_root, currentPlayer, targetSubGridPath));
     auto moves = grid.grid_root.getAvailableMove(targetSubGridPath);
     return playMove(moves[rand() % moves.size()], currentPlayer);
 }

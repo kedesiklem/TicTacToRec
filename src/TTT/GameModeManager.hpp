@@ -7,14 +7,20 @@
 #include <functional>
 
 class GameRandomStart : public GameState {
-    int startMoveCount = INFINITY;
-    double minRandomTime = 0; // 1s = 1e6
+    public:
+        bool autoStart = true;
+        bool fullRun = false;
+        int startMoveCount = 0;
+        int startMoveDoubt[2] = {25,5};
+        float minRandomTime = 2e5; // 1s = 1e6
 
 public:
     GameRandomStart(GridView& grid) : GameState(grid) {}
 
+    void showParam() override;
     bool playTurn() override;
     bool playRandom();
+    void reset();
 };
 
 class GameModeManager {
@@ -23,14 +29,7 @@ class GameModeManager {
     std::map<std::string, std::function<GameState*()>> modeFactories;
 
 public:
-    GameModeManager(GridView& grid) {
-        // Enregistrement des modes disponibles
-        modeFactories["Classic"] = [&]() { return new GameState(grid); };
-        modeFactories["RandomStart"] = [&]() { return new GameRandomStart(grid); };
-        
-        // Mode par défaut
-        changeGameMode("Classic");
-    }
+    GameModeManager(GridView& grid);
 
     GameState& operator()() {
         return *currentMode;
@@ -40,10 +39,5 @@ public:
         return modeFactories;
     }
 
-    void changeGameMode(const std::string& modeName) {
-        if (modeFactories.find(modeName) != modeFactories.end()) {
-            currentMode = modeFactories[modeName]();
-            currentMode->reset();
-        }
-    }
+    void changeGameMode(const std::string& modeName);
 };

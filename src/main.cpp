@@ -6,7 +6,7 @@
 #include <setup_interface.h>
 #include <setup_shortcut.h>
 
-#define GRID_SIZE 5
+#define GRID_SIZE 3
 #define GRID_REC 1
 
 int main() {

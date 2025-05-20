@@ -45,7 +45,7 @@ namespace {
 
         gameState.grid.update(window_pos + marging, ImVec2{min_size, min_size} - (marging * 2));
 
-        while(!gameState.grid.grid_root.isLockedShaped()){
+        if(!gameState.grid.grid_root.isLockedShaped()){
             gameState.playTurn();
         }
     
@@ -58,6 +58,8 @@ namespace {
         ImGui::Begin("Infos", nullptr);
         {
             ImGui::Text("AutoMove : %s", gameState.autoMode ? "On" : "Off");
+
+            gameState.showParam();
 
             ImGui::Separator();
             if (ImGui::Button("Réinitialiser")) {
@@ -83,7 +85,7 @@ namespace {
             for (size_t i = 0; i < max_size; ++i) {
                 if (i < gameState.moveHistory.size()) {
                     str << gameState.moveHistory[i];
-                    ImGui::Text("%s", str.str().c_str());
+                    ImGui::Text("%s [%ld/%ld]", str.str().c_str(), i + 1, gameState.moveHistory.size());
                     str.str("");
                 } else {
                     ImGui::Text(" ");
@@ -93,7 +95,7 @@ namespace {
 
                 if (i < gameState.redoHistory.size()) {
                     str << gameState.redoHistory[i];
-                    ImGui::Text("%s", str.str().c_str());
+                    ImGui::Text("%s [%ld/%ld]", str.str().c_str(), i + 1, gameState.redoHistory.size());
                     str.str("");
                 } else {
                     ImGui::Text(" ");

@@ -25,6 +25,8 @@ public:
 
     GameState(GridView& grid) : grid(grid) { reset(); }
 
+    virtual void showParam(){};
+
     bool isBotPlayer(GridShape shape);
 
     bool playMove(Path path, GridShape player);
@@ -38,15 +40,13 @@ public:
 
     void endTurn(const Path lastPlayedSubGridPath);
     
-    
     bool saveState(const std::string& filename) const;
     bool loadState(const std::string& filename);
-    
     
     bool undoLastMove();
     bool redoLastMove();
     
-    void reset();
+    virtual void reset();
 };
 
 std::ostream& operator<<(std::ostream& os, const Move& move);
