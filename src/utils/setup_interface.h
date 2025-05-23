@@ -26,7 +26,7 @@ namespace {
         
         ImGui::DockBuilderDockWindow("Game", dock_main);
         ImGui::DockBuilderDockWindow("Infos", dock_right);
-        ImGui::DockBuilderDockWindow("Game Mode", dock_right);
+        ImGui::DockBuilderDockWindow("Game Settings", dock_right);
         
         ImGui::DockBuilderFinish(dockspace_id);
     }
@@ -48,15 +48,65 @@ namespace {
         if(!gameState.grid.grid_root.isLockedShaped()){
             gameState.playTurn();
         }
+
+
     
         gameState.grid.draw(gameState.targetSubGridPath);        
         ImGui::End();
         ImGui::PopStyleVar();
     }
 
-    void show_infos_window(GameState& gameState) {
-        ImGui::Begin("Infos", nullptr);
-        {
+    void show_mode_window(GameModeManager& modeManager) {
+        ImGui::Begin("Game Settings");
+    
+        // Première section déroulante pour les paramètres de la grille
+        if (ImGui::CollapsingHeader("Grid Config")) {
+            static int grid_cols = 3;
+            static int grid_rows = 3;
+            static int grid_depth = 1;
+            static bool grid_squared = true;
+    
+            ImGui::Checkbox("Square Grid", &grid_squared);
+    
+            if (grid_squared) {
+                ImGui::SliderInt("Grid Size", &grid_cols, 1, 5);
+                grid_rows = grid_cols;
+            } else {
+                ImGui::SliderInt("Grid Columns", &grid_cols, 1, 5);
+                ImGui::SliderInt("Grid Rows", &grid_rows, 1, 5);
+            }
+            ImGui::SliderInt("Grid Depth", &grid_depth, 0, 3);
+    
+            if (ImGui::Button("Apply Grid Settings")) {
+                modeManager().grid.grid_root = GridLogic(grid_rows, grid_cols, grid_depth);
+                modeManager().reset();
+            }
+        }
+    
+        // Deuxième section déroulante pour la sélection du mode de jeu
+        if (ImGui::CollapsingHeader("Game Mode")) {
+            const auto& modes = modeManager.getAvailableModes();
+            
+            // Afficher la liste des modes disponibles avec des boutons
+            for (const auto& [name, _] : modes) {
+                if (ImGui::Button(name.c_str())) {
+                    modeManager.changeGameMode(name);
+                }
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Switch to %s mode", name.c_str());
+                }
+                
+                // Espacement entre les boutons
+                ImGui::SameLine();
+                if (ImGui::GetContentRegionAvail().x < ImGui::CalcTextSize(name.c_str()).x + 30) {
+                    ImGui::NewLine();
+                }
+            }
+        }
+        
+        auto& gameState = modeManager();
+
+        if (ImGui::CollapsingHeader("Game Config")) {
             ImGui::Text("AutoMove : %s", gameState.autoMode ? "On" : "Off");
 
             gameState.showParam();
@@ -106,25 +156,9 @@ namespace {
 
             ImGui::Columns(1);
         }
-        ImGui::End();
-    };
-
-    void show_mode_window(GameModeManager& modeManager) {
-        ImGui::Begin("Game Mode");
-        
-        // Afficher la liste des modes disponibles
-        const auto& modes = modeManager.getAvailableModes();
-        for (const auto& [name, _] : modes) {
-            if (ImGui::Button(name.c_str())) {
-                modeManager.changeGameMode(name);
-            }
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Switch to %s mode", name.c_str());
-            }
-        }
         
         ImGui::End();
-    };
+    }
 
     void setup_interface(GameModeManager& modeManager) {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -154,7 +188,6 @@ namespace {
         }
         show_game_window(modeManager());
         show_mode_window(modeManager);
-        show_infos_window(modeManager());
     };
 
 } // namespace

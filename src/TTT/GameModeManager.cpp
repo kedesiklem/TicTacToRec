@@ -48,11 +48,9 @@ void GameRandomStart::reset(){
 
 void GameRandomStart::showParam(){
     ImGui::Text("%d,%d,%d", startMoveCount, startMoveDoubt[0], startMoveDoubt[1]);
-    static int a = 7;
-    ImGui::SliderInt("Power", &a, 2, 29);
-    ImGui::SliderInt("RandomCount", &startMoveDoubt[0], 0, (int)std::pow(2,a));
-    ImGui::SliderInt("RandomDoubt", &startMoveDoubt[1], 0, (int)std::pow(2,a) -1);
-    ImGui::SliderFloat("TimeWait", &minRandomTime, 0, 3);
+    ImGui::SliderInt("Count", &startMoveDoubt[0], 0, (int)std::pow(2,7));
+    ImGui::SliderInt("Random", &startMoveDoubt[1], 0, (int)std::pow(2,7) -1);
+    ImGui::SliderFloat("Wait", &minRandomTime, 0, 3);
     ImGui::Checkbox("AutoStart", &autoStart);
     if(fullRun != (fullRun = ImGui::Button("FullRun"))){
         GameRandomStart::reset();

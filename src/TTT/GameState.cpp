@@ -64,7 +64,7 @@ void GameState::endTurn(const Path lastPlayedSubGridPath) {
     Path currentPath;
     for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
         currentPath.push_back(targetSubGridPath[i]);        
-        if (grid.grid_root.getGridFromPath(currentPath).getShape() != GridShape::NONE) {
+        if (grid.grid_root.getGridFromPath(currentPath).isLockedShaped()) {
             currentPath.pop_back();
             targetSubGridPath.assign(currentPath.begin(), currentPath.end());
             break;

@@ -70,7 +70,7 @@ GridLogic& GridLogic::getSubGrid(int index){
 
 const GridLogic& GridLogic::getSubGrid(int index) const {
     if (index < 0 || index >= rows * cols) {
-        throw std::out_of_range("Invalid subgrid indices");
+        throw std::out_of_range("Invalid subgrid indices [const]");
     }
 
     int r = index / cols;
@@ -90,7 +90,7 @@ const GridLogic& GridLogic::getSubGrid(int row, int col) const {
     if (row >= 0 && row < rows && col >= 0 && col < cols) {
         return subGrids[row][col];
     }
-    throw std::out_of_range("Invalid subgrid indices");
+    throw std::out_of_range("Invalid subgrid indices [const]");
 };
 
 GridLogic GridLogic::getGridFromPath(const Path& path) {
@@ -107,12 +107,13 @@ GridShape GridLogic::checkVictory(){
     if(isLeaf()){
         return currentShape;
     }
+    bool win = true;
     // Vérification des lignes
     for (int r = 0; r < rows; ++r) {
-        GridShape first = getSubGrid(r, 0).currentShape;
-        if (first == GridShape::NONE) continue;
+        auto first = getSubGrid(r, 0).currentShape;
+        if (!isWinningShape(first)) continue;
         
-        bool win = true;
+        win = true;
         for (int c = 1; c < cols; ++c) {
             if (getSubGrid(r, c).currentShape != first) {
                 win = false;
@@ -124,10 +125,10 @@ GridShape GridLogic::checkVictory(){
 
     // Vérification des colonnes
     for (int c = 0; c < cols; ++c) {
-        GridShape first = getSubGrid(0, c).currentShape;
-        if (first == GridShape::NONE) continue;
+        auto first = getSubGrid(0, c).currentShape;
+        if (!isWinningShape(first)) continue;
         
-        bool win = true;
+        win = true;
         for (int r = 1; r < rows; ++r) {
             if (getSubGrid(r, c).currentShape != first) {
                 win = false;
@@ -138,10 +139,10 @@ GridShape GridLogic::checkVictory(){
     }
 
     // Vérification de la diagonale principale
-    GridShape first = getSubGrid(0, 0).currentShape;
-    if (first != GridShape::NONE) {
-        bool win = true;
-        for (int i = 1; i < rows; ++i) {
+    auto first = getSubGrid(0, 0).currentShape;
+    if (!isWinningShape(first)) {
+        win = true;
+        for (int i = 1; i < std::min(rows,cols); ++i) {
             if (getSubGrid(i, i).currentShape != first) {
                 win = false;
                 break;
@@ -152,9 +153,9 @@ GridShape GridLogic::checkVictory(){
 
     // Vérification de l'anti-diagonale
     first = getSubGrid(0, cols-1).currentShape;
-    if (first != GridShape::NONE) {
-        bool win = true;
-        for (int i = 1; i < rows; ++i) {
+    if (!isWinningShape(first)) {
+        win = true;
+        for (int i = 1; i < std::min(rows,cols); ++i) {
             if (getSubGrid(i, cols-1-i).currentShape != first) {
                 win = false;
                 break;
@@ -166,7 +167,7 @@ GridShape GridLogic::checkVictory(){
     // Vérification du match nul
     for (int r = 0; r < rows; ++r) {
         for (int c = 0; c < cols; ++c) {
-            if (getSubGrid(r, c).currentShape == GridShape::NONE) {
+            if (!getSubGrid(r, c).isLockedShaped()) {
                 return GridShape::NONE;
             }
         }
