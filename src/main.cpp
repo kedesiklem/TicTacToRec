@@ -11,6 +11,8 @@
 
 int main() {
 
+    srand(time(nullptr));
+
     // Initialisation GLFW
     if (!glfwInit()) {
         std::cerr << "Échec de l'initialisation GLFW" << std::endl;

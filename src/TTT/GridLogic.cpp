@@ -79,14 +79,14 @@ const GridLogic& GridLogic::getSubGrid(int index) const {
     return getSubGrid(r,c);
 };
 
-GridLogic& GridLogic::getSubGrid(size_t row, size_t col) {
+GridLogic& GridLogic::getSubGrid(int row, int col) {
     if (row >= 0 && row < rows && col >= 0 && col < cols) {
         return subGrids[row][col];
     }
     throw std::out_of_range("Invalid subgrid indices");
 };
 
-const GridLogic& GridLogic::getSubGrid(size_t row, size_t col) const {
+const GridLogic& GridLogic::getSubGrid(int row, int col) const {
     if (row >= 0 && row < rows && col >= 0 && col < cols) {
         return subGrids[row][col];
     }
@@ -179,7 +179,7 @@ bool GridLogic::playMove(const Path &path, GridShape player){
     return playMove(path, player, 0, false);
 }
 
-bool GridLogic::playMove(const Path &path, GridShape player, size_t step, bool locked, Path currentPath)
+bool GridLogic::playMove(const Path &path, GridShape player, int step, bool locked, Path currentPath)
 {
     locked |= isLockedShaped();
     locked |= !starts_with(currentPath, path);
@@ -199,7 +199,7 @@ bool GridLogic::playMove(const Path &path, GridShape player, size_t step, bool l
     return false;
 }
 
-void GridLogic::undoMove(const Path &path, size_t step)
+void GridLogic::undoMove(const Path &path, int step)
 {
     if(step == path.size()){
         if(isLeaf() && isLockedShaped()){
@@ -213,7 +213,7 @@ void GridLogic::undoMove(const Path &path, size_t step)
     }
 }
 
-std::vector<Path> GridLogic::getAvailableMove(const Path &target, Path currentPath) const
+std::vector<Path> GridLogic::getAvailableMoves(const Path &target, Path currentPath) const
 {
     std::vector<Path> result;
 
@@ -231,10 +231,38 @@ std::vector<Path> GridLogic::getAvailableMove(const Path &target, Path currentPa
             for (int c = 0; c < cols; ++c) {
                 int index = r * cols + c;
                 currentPath.push_back(index);
-                auto tmp = getSubGrid(index).getAvailableMove(target, currentPath);
+                auto tmp = getSubGrid(index).getAvailableMoves(target, currentPath);
                 result.insert(result.end(), tmp.begin(), tmp.end());
                 currentPath.pop_back();
             }
+        }
+    }
+    return result;
+}
+
+std::optional<Path> GridLogic::getRandomAvailableMove(const Path& target, Path currentPath) const
+{
+    std::optional<Path> result = std::nullopt;
+
+    bool locked = false;
+    locked |= isLockedShaped();
+    locked |= !starts_with(currentPath, target);
+    if (locked) {
+        return result;
+    }
+
+    if (isLeaf()) {
+        return currentPath;
+    } else {
+        int random_start = rand() % (rows * cols);
+        for(int i = random_start; i < random_start + (rows * cols); ++i){
+            int index = i % (rows * cols);
+            currentPath.push_back(index);
+            auto tmp = getSubGrid(index).getRandomAvailableMove(target, currentPath);
+            if(tmp){
+                return tmp;
+            }
+            currentPath.pop_back();
         }
     }
     return result;

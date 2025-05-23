@@ -3,7 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
-
+#include <optional>
 
 template <typename T>
 bool starts_with(const std::vector<T>& vec, const std::vector<T>& prefix) {
@@ -24,8 +24,6 @@ enum class GridShape {
 std::ostream& operator<<(std::ostream& os, const GridShape& shape);
 
 class GridLogic {
-
-    
 
     int rows;
     int cols;
@@ -69,17 +67,18 @@ class GridLogic {
 
         GridLogic& getSubGrid(int index);
         const GridLogic& getSubGrid(int index) const;
-        GridLogic &getSubGrid(size_t row, size_t col);
-        const GridLogic &getSubGrid(size_t row, size_t col) const;
+        GridLogic &getSubGrid(int row, int col);
+        const GridLogic &getSubGrid(int row, int col) const;
         GridLogic getGridFromPath(const Path& path);
         GridShape checkVictory();
 
         bool playMove(const Path& path, GridShape player);
-        bool playMove(const Path& path, GridShape player, size_t step, bool locked, Path currentPath = {});
+        bool playMove(const Path& path, GridShape player, int step, bool locked, Path currentPath = {});
 
-        void undoMove(const Path& path, size_t step = 0);
+        void undoMove(const Path& path, int step = 0);
 
-        std::vector<Path> getAvailableMove(const Path& target = {}, Path currentPath = {}) const;
+        std::vector<Path> getAvailableMoves(const Path& target = {}, Path currentPath = {}) const;
+        std::optional<Path> getRandomAvailableMove(const Path& target = {}, Path currentPath = {}) const;
 
         friend std::ostream& operator<<(std::ostream& os, const GridLogic& grid);
     };
@@ -104,4 +103,5 @@ inline std::ostream& operator<<(std::ostream& os, const GridLogic& grid){
     os << grid.currentShape;
     if(!grid.subGrids.empty())
         os << grid.subGrids;
+    return os;
 };

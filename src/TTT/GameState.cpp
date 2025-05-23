@@ -30,8 +30,12 @@ bool GameState::playMoveBase(Path path, GridShape player)
 }
 
 bool GameState::playRandom() {
-    auto moves = grid.grid_root.getAvailableMove(targetSubGridPath);
-    return playMove(moves[rand() % moves.size()], currentPlayer);
+    auto move = grid.grid_root.getRandomAvailableMove(targetSubGridPath);
+    if(move){
+        return playMove(move.value(), currentPlayer);
+    }else{
+        throw "No available move";
+    }
 }
 
 bool GameState::playTurn(){
@@ -41,7 +45,7 @@ bool GameState::playTurn(){
         auto path = grid.handleGridInteraction();
         if(path){
             return playMove(path.value());
-        }
+        }return false;
     }
 }
 
@@ -92,7 +96,6 @@ bool GameState::undoLastMove() {
 
     for (size_t i = 0; i < lastMove.path.size(); ++i) {
         int index = lastMove.path[i];
-        int rows = currentGrid->getRows();
         int cols = currentGrid->getCols();
         int r = index / cols;
         int c = index % cols;

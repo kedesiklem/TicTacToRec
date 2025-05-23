@@ -2,19 +2,18 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include <optional>
-#include <imgui.h>
+#include "../external/imgui/imgui.h"
 #include "GridLogic.hpp"
 
 class GridView {
-    float ratio;
-
     ImVec2 pos;
     ImVec2 size;
 
 public:
 
     GridLogic& grid_root;
+    float ratio;
+
 
     GridView(GridLogic& grid, float ratio)
         : grid_root(grid), ratio(ratio) {}
@@ -64,8 +63,8 @@ public:
         if(grid.isLeaf()) {
             drawLeafCell(draw_list, grid, pos, size, locked);
         } else {
-            for (size_t r = 0; r < grid.getRows(); ++r) {
-                for (size_t c = 0; c < grid.getCols(); ++c) {
+            for (int r = 0; r < grid.getRows(); ++r) {
+                for (int c = 0; c < grid.getCols(); ++c) {
                     currentPath.push_back(r * grid.getCols() + c);
 
                     ImVec2 cell_pos = calculateCellPosition(pos, dim, r, c);
@@ -108,8 +107,8 @@ private:
         if (!grid.isLeaf()) {
             std::pair<ImVec2, ImVec2> dim = calculateDimensions(size, grid.getCols(), grid.getRows(), ratio);
             
-            for (size_t r = 0; r < grid.getRows(); ++r) {
-                for (size_t c = 0; c < grid.getCols(); ++c) {
+            for (int r = 0; r < grid.getRows(); ++r) {
+                for (int c = 0; c < grid.getCols(); ++c) {
                     currentPath.push_back(r * grid.getCols() + c);
                     
                     ImVec2 cell_pos = calculateCellPosition(pos, dim, r, c);

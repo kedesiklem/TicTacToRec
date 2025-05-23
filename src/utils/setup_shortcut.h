@@ -62,7 +62,7 @@ class PrintValidMovesFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        auto validMove = gameState().grid.grid_root.getAvailableMove(gameState().targetSubGridPath);
+        auto validMove = gameState().grid.grid_root.getAvailableMoves(gameState().targetSubGridPath);
         std::cout << "Valid Moves[" << validMove.size() << "]" << std::endl;
         for(auto move : validMove){
             std::cout << "[" << move << "]";
@@ -112,4 +112,10 @@ void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, GameMo
 
     shortcutManager.addShortcut({{ImGuiKey_B, true}}, 
         new ToggleAutoMode(gameMode), "Toggle autoMode");
+
+    // shortcutManager.addShortcut({{ImGuiKey_L}}, 
+    //     new Lambda([]{}(std::cout << "Bidule" << std::endl;)), "Truc message");
+        
+    // shortcutManager.addShortcut({{ImGuiKey_M}}, 
+    //     new Lambda([]{}(std::cout << "Truc" << std::endl;)), "Truc message");
 }

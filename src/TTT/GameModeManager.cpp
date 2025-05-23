@@ -13,13 +13,29 @@ bool GameRandomStart::playTurn() {
             return playMove(path.value());
         }
     }
+
+    return false;
+}
+
+bool GameRandomStart::timeLock(float minTime){
+    static auto last_call_time = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = now - last_call_time;
+    if(elapsed >= std::chrono::duration<double>(minTime)){
+        last_call_time = now;
+        return false;
+    }
+    return true;
+    
 }
 
 bool GameRandomStart::playRandom() {
-    if(!fullRun){
-        usleep(minRandomTime);
+
+
+    if(fullRun || !timeLock(minRandomTime)) {
+        return GameState::playRandom();
     }
-    return GameState::playRandom();
+    return false;
 }
 
 void GameRandomStart::reset(){
@@ -31,9 +47,12 @@ void GameRandomStart::reset(){
 }
 
 void GameRandomStart::showParam(){
-    ImGui::Text("%ld,%ld,%ld", startMoveCount, startMoveDoubt[0], startMoveDoubt[1]);
-    ImGui::SliderInt("RandomCount", &startMoveDoubt[0], 0, 100);
-    ImGui::SliderInt("RandomDoubt", &startMoveDoubt[1], 0, 20);
+    ImGui::Text("%d,%d,%d", startMoveCount, startMoveDoubt[0], startMoveDoubt[1]);
+    static int a = 7;
+    ImGui::SliderInt("Power", &a, 2, 29);
+    ImGui::SliderInt("RandomCount", &startMoveDoubt[0], 0, (int)std::pow(2,a));
+    ImGui::SliderInt("RandomDoubt", &startMoveDoubt[1], 0, (int)std::pow(2,a) -1);
+    ImGui::SliderFloat("TimeWait", &minRandomTime, 0, 3);
     ImGui::Checkbox("AutoStart", &autoStart);
     if(fullRun != (fullRun = ImGui::Button("FullRun"))){
         GameRandomStart::reset();

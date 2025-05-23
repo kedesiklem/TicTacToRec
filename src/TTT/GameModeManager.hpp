@@ -5,22 +5,26 @@
 #include <memory>
 #include <map>
 #include <functional>
+#include <chrono>
+#include <ctime> 
 
 class GameRandomStart : public GameState {
+
+    bool timeLock(float minTime);
+
     public:
-        bool autoStart = true;
+        bool autoStart = false;
         bool fullRun = false;
         int startMoveCount = 0;
-        int startMoveDoubt[2] = {25,5};
-        float minRandomTime = 2e5; // 1s = 1e6
+        int startMoveDoubt[2] = {20,5};
+        float minRandomTime = 0.2;
 
-public:
     GameRandomStart(GridView& grid) : GameState(grid) {}
 
     void showParam() override;
     bool playTurn() override;
     bool playRandom();
-    void reset();
+    void reset() override;
 };
 
 class GameModeManager {
