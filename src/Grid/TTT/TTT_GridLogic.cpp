@@ -2,6 +2,8 @@
 #include <numeric>
 #include <algorithm>
 
+using namespace TTT;
+
 TTT_Shape TTT_GridLogic::checkVictory(){
 
     if(isLeaf()){

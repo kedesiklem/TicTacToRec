@@ -1,8 +1,10 @@
-#include "GameState.hpp"
+#include "TTT/TTT_GameState.hpp"
 #include "imgui.h"
 #include <gtest/gtest.h>
 #include <sstream>
 #include <vector>
+
+using namespace TTT;
 
 class GameStateTest : public GameState {
 public:
@@ -27,7 +29,7 @@ public:
 TEST(GameConfigUITest, NullAndEdgeCases) {
     // Setup
     TTT_GridLogic gridLogic(3, 3);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
     
     // Test 1: Historique vide
@@ -85,7 +87,7 @@ TEST(GameConfigUITest, NullAndEdgeCases) {
 }
 TEST(GameConfigUITest, LargeHistory) {
     TTT_GridLogic gridLogic(3, 3);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
     
     // Remplir avec un grand historique
@@ -105,7 +107,7 @@ TEST(GameConfigUITest, LargeHistory) {
 }
 TEST(GameConfigUITest, InvalidMoveEntries) {
     TTT_GridLogic gridLogic(3, 3);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
     
     // Ajouter des entrées invalides
@@ -121,7 +123,7 @@ TEST(GameConfigUITest, InvalidMoveEntries) {
 }
 TEST(GameConfigUITest, StringStreamEdgeCases) {
     TTT_GridLogic gridLogic(3, 3);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
     
     // Cas particulier pour le stringstream
@@ -137,7 +139,7 @@ TEST(GameConfigUITest, StringStreamEdgeCases) {
 TEST(GameConfigUITest, 1x1GridBasic) {
     // Configuration minimale 1x1
     TTT_GridLogic gridLogic(1, 1);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
 
     // Test affichage de base
@@ -153,7 +155,7 @@ TEST(GameConfigUITest, 1x1GridWithMoves_SegfaultFix) {
 
     // Configuration initiale
     TTT_GridLogic gridLogic(1, 1);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
 
     // 1. Vérification de la grille 1x1 de base
@@ -162,11 +164,11 @@ TEST(GameConfigUITest, 1x1GridWithMoves_SegfaultFix) {
     EXPECT_EQ(gridLogic.getCols(), 1);
 
     // 2. Préparation des mouvements avec vérification
-    Move crossMove;
+    TTT_Move crossMove;
     crossMove.path = {}; // Chemin vide pour grille 1x1
     crossMove.shape = TTT_Shape::CROSS;
     
-    Move circleMove;
+    TTT_Move circleMove;
     circleMove.path = {}; // Chemin vide pour grille 1x1
     circleMove.shape = TTT_Shape::CIRCLE;
 
@@ -221,7 +223,7 @@ TEST(GameConfigUITest, 1x1GridWithMoves_SegfaultFix) {
 }
 TEST(GameConfigUITest, 1x1GridWithMoves) {
     TTT_GridLogic gridLogic(1, 1);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
 
     // Simuler quelques mouvements
@@ -246,7 +248,7 @@ TEST(GameConfigUITest, 1x1GridWithMoves) {
 }
 TEST(GameConfigUITest, 1x1GridReset) {
     TTT_GridLogic gridLogic(1, 1);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
 
     // Simuler un mouvement puis reset
@@ -262,7 +264,7 @@ TEST(GameConfigUITest, 1x1GridReset) {
 }
 TEST(GameConfigUITest, 1x1GridEdgeCases) {
     TTT_GridLogic gridLogic(1, 1);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
 
     // Cas extrêmes
@@ -279,14 +281,14 @@ TEST(GameConfigUITest, 1x1GridEdgeCases) {
             for (const auto& move : gameState.moveHistory) {
                 str.str("");
                 str << move;
-                MockImGui::text("Move: %s", str.str().c_str());
+                MockImGui::text("TTT_Move: %s", str.str().c_str());
             }
         }
     });
 }
 TEST(GameConfigUITest, 1x1GridPathNavigation) {
     TTT_GridLogic gridLogic(1, 1);
-    GridView gridView(gridLogic, 0.9f);
+    TTT_GridView gridView(gridLogic, 0.9f);
     GameStateTest gameState(gridView);
 
     // Test navigation avec chemin (devrait être vide en 1x1)

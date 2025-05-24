@@ -1,6 +1,8 @@
 #pragma once
 
-#include "GridLogic.hpp"
+#include "../GridLogic.hpp"
+
+namespace TTT {
 
 enum class TTT_Shape {
     NONE,
@@ -78,12 +80,15 @@ class TTT_GridLogic : public GridLogic<TTT_Cell, TTT_GridLogic> {
         std::optional<Path> getRandomAvailableMove(const Path& target = {}, Path currentPath = {}) const;
 };
 
-inline std::ostream& operator<<(std::ostream& os, const TTT_Shape& shape){
-    os << TTT_Cell::ShapeToString(shape);
+} // namespace TTT
+
+inline std::ostream& operator<<(std::ostream& os, const TTT::TTT_Shape& shape){
+    os << TTT::TTT_Cell::ShapeToString(shape);
     return os;
 };
 
-inline std::ostream& operator<<(std::ostream& os, const TTT_Cell& cell){
+inline std::ostream& operator<<(std::ostream& os, const TTT::TTT_Cell& cell){
     os << cell.ShapeToString();
     return os;
 };
+

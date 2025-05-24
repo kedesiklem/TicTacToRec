@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Grid/GameModeManager.hpp"
+#include "../Grid/TTT/TTT_GameModeManager.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -15,7 +15,7 @@
 
 #define SAVE_WIN_FILE "win.ttt"
 
-namespace {
+namespace TTT {
 
     void setup_init(ImGuiID dockspace_id) {
         ImGui::DockBuilderRemoveNode(dockspace_id);
@@ -46,7 +46,7 @@ namespace {
             if (available_size.x > 0 && available_size.y > 0) {
                 gameState.grid.update(window_pos + marging, available_size);
     
-                if(!gameState.grid.grid_root.isLocked()) {
+                if(!gameState.grid.grid.isLocked()) {
                     gameState.playTurn();
                 }
     
@@ -99,7 +99,7 @@ namespace {
             ImGui::SliderInt("Grid Depth", &grid_depth, 0, 3);
     
             if (ImGui::Button("Apply Grid Settings")) {
-                modeManager().grid.grid_root = TTT_GridLogic(grid_rows, grid_cols, grid_depth);
+                modeManager().grid.grid = TTT_GridLogic(grid_rows, grid_cols, grid_depth);
                 modeManager().reset();
             }
         }

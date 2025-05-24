@@ -1,8 +1,10 @@
-#include "GameModeManager.hpp"
+#include "TTT_GameModeManager.hpp"
+
+using namespace TTT;
 
 bool GameRandomStart::playTurn() {
     if(fullRun){
-        while(!grid.grid_root.isLocked()){playRandom();};
+        while(!grid.grid.isLocked()){playRandom();};
         fullRun = false;
         return true;
     }else if((isBotPlayer(currentPlayer)) || ((startMoveCount > moveHistory.size()) && autoStart)){
@@ -57,7 +59,7 @@ void GameRandomStart::showParam(){
     };
 }
 
-GameModeManager::GameModeManager(GridView& grid) {
+GameModeManager::GameModeManager(TTT_GridView& grid) {
     // Enregistrement des modes disponibles
     modeFactories["Classic"] = [&]() { return new GameState(grid); };
     modeFactories["RandomStart"] = [&]() { return new GameRandomStart(grid); };

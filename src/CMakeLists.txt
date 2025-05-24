@@ -17,10 +17,12 @@ set(IMGUI_SOURCES
 
 # Sources du jeu
 file(GLOB GRID_SOURCES ${GRID_DIR}/*.cpp)
+file(GLOB TTT_SOURCES ${GRID_DIR}/TTT/*.cpp)
 
 # Création de la bibliothèque principale
 add_library(game_lib STATIC
     ${GRID_SOURCES}
+    ${TTT_SOURCES}
     ${IMGUI_SOURCES}
 )
 

@@ -1,11 +1,13 @@
 #pragma once
 
-#include "GridView.hpp"
+#include "TTT_GridView.hpp"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
 
-struct Move {
+namespace TTT {
+
+struct TTT_Move {
     Path path;
     Path target;
     TTT_Shape shape;
@@ -14,13 +16,13 @@ struct Move {
 class GameState {
 public:
     bool autoMode = false;
-    GridView& grid;
+    TTT_GridView& grid;
     TTT_Shape currentPlayer;
     Path targetSubGridPath;
-    std::vector<Move> moveHistory;
-    std::vector<Move> redoHistory;
+    std::vector<TTT_Move> moveHistory;
+    std::vector<TTT_Move> redoHistory;
 
-    GameState(GridView& grid) : grid(grid) { reset(); }
+    GameState(TTT_GridView& grid) : grid(grid) { reset(); }
 
     virtual void showParam(){};
 
@@ -41,5 +43,8 @@ public:
     virtual void reset();
 };
 
-std::ostream& operator<<(std::ostream& os, const Move& move);
-std::ostream& operator<<(std::ostream& os, const GameState& gameState);
+} // namespace TTT
+
+std::ostream& operator<<(std::ostream& os, const TTT::TTT_Move& move);
+std::ostream& operator<<(std::ostream& os, const TTT::GameState& gameState);
+

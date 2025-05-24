@@ -3,8 +3,10 @@
 
 #include <config.h>
 #include <iostream>
-#include "utils/setup_interface.h"
-#include "utils/setup_shortcut.h"
+#include "utils/TTT_setup_interface.h"
+#include "utils/TTT_setup_shortcut.h"
+
+using namespace TTT;
 
 #define GRID_SIZE 3
 #define GRID_REC 1
@@ -49,7 +51,7 @@ int main() {
 
     // Initialisation jeu
     TTT_GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
-    GridView gridV(grid, 0.985);
+    TTT_GridView gridV(grid, 0.985);
     GameModeManager gameMode(gridV);
     gameMode.changeGameMode("RandomStart");
     std::stringstream str;

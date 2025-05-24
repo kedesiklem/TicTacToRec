@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Grid/GameModeManager.hpp"
+#include "../Grid/TTT/TTT_GameModeManager.hpp"
 
 #include "emacsStyleShortCut.hpp"
 
@@ -11,6 +11,8 @@
 #include <GLFW/glfw3.h>
 
 #define SAVE_STATE "save_state.ttt"
+
+namespace TTT {
 
 class CloseWindowFunctor : public Functor {
     GLFWwindow* window;
@@ -62,7 +64,7 @@ class PrintValidMovesFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        auto validMove = gameState().grid.grid_root.getAvailableMoves(gameState().targetSubGridPath);
+        auto validMove = gameState().grid.grid.getAvailableMoves(gameState().targetSubGridPath);
         std::cout << "Valid Moves[" << validMove.size() << "]" << std::endl;
         for(auto move : validMove){
             std::cout << "[" << move << "]";
@@ -113,3 +115,5 @@ void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, GameMo
     shortcutManager.addShortcut({{ImGuiKey_B, true}}, 
         new ToggleAutoMode(gameMode), "Toggle autoMode");
     }
+
+}

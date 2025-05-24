@@ -1,9 +1,11 @@
-#include "TTT_GridLogic.hpp"
+#include "TTT/TTT_GridLogic.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 #include <stdexcept>
 
 using namespace std;
+
+using namespace TTT;
 
 // Helper function to create a path
 Path make_path(const vector<int>& indices) {

@@ -1,4 +1,6 @@
-#include "GameState.hpp"
+#include "TTT_GameState.hpp"
+
+using namespace TTT;
 
 TTT_Shape defaultPlayer() {
     return TTT_Shape::CROSS;
@@ -19,7 +21,7 @@ bool GameState::playMove(Path path, TTT_Shape player) {
 
 bool GameState::playMoveBase(Path path, TTT_Shape player) {
     if(starts_with(path, targetSubGridPath)) {
-        if(grid.grid_root.playMove(path, player)) {
+        if(grid.grid.playMove(path, player)) {
             endTurn(path);
             return true;
         }
@@ -28,7 +30,7 @@ bool GameState::playMoveBase(Path path, TTT_Shape player) {
 }
 
 bool GameState::playRandom() {
-    auto move = grid.grid_root.getRandomAvailableMove(targetSubGridPath);
+    auto move = grid.grid.getRandomAvailableMove(targetSubGridPath);
     if(move) {
         return playMove(move.value(), currentPlayer);
     } else {
@@ -63,7 +65,7 @@ void GameState::endTurn(const Path lastPlayedSubGridPath) {
     Path currentPath;
     for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
         currentPath.push_back(targetSubGridPath[i]);        
-        if (grid.grid_root.getGridFromPath(currentPath).isLocked()) {
+        if (grid.grid.getGridFromPath(currentPath).isLocked()) {
             currentPath.pop_back();
             targetSubGridPath.assign(currentPath.begin(), currentPath.end());
             break;
@@ -72,7 +74,7 @@ void GameState::endTurn(const Path lastPlayedSubGridPath) {
 }
 
 void GameState::reset() {
-    grid.grid_root.resetGrid();
+    grid.grid.resetGrid();
     currentPlayer = defaultPlayer();
     targetSubGridPath.clear();
     moveHistory.clear();
@@ -82,14 +84,14 @@ void GameState::reset() {
 bool GameState::undoLastMove() {
     if (moveHistory.empty()) return false;
 
-    Move lastMove = moveHistory.back();
+    TTT_Move lastMove = moveHistory.back();
     redoHistory.push_back(lastMove);
     moveHistory.pop_back();
 
     targetSubGridPath = lastMove.target;
     currentPlayer = lastMove.shape;
 
-    TTT_GridLogic* currentGrid = &grid.grid_root;
+    TTT_GridLogic* currentGrid = &grid.grid;
     currentGrid->setShape(TTT_Shape::NONE);
 
     for (size_t i = 0; i < lastMove.path.size(); ++i) {
@@ -108,7 +110,7 @@ bool GameState::undoLastMove() {
 bool GameState::redoLastMove() {
     if (redoHistory.empty()) return false;
 
-    Move redoMove = redoHistory.back();
+    TTT_Move redoMove = redoHistory.back();
     redoHistory.pop_back();
 
     targetSubGridPath = redoMove.target;
@@ -182,7 +184,7 @@ bool GameState::loadState(const std::string& filename) {
     }
 
     reset();
-    grid.grid_root.resetGrid();
+    grid.grid.resetGrid();
 
     std::string line;
     std::string section;
@@ -269,7 +271,7 @@ bool GameState::loadState(const std::string& filename) {
     return success && inFile.eof();
 }
 
-std::ostream& operator<<(std::ostream& os, const Move& move) {
+std::ostream& operator<<(std::ostream& os, const TTT_Move& move) {
     try {
         os << move.shape << " ";
         if (!move.path.empty()) {
@@ -281,7 +283,7 @@ std::ostream& operator<<(std::ostream& os, const Move& move) {
     }
     catch (const std::out_of_range& e) {
         os.setstate(std::ios_base::failbit);
-        throw std::runtime_error("Invalid path index in Move serialization: " + std::string(e.what()));
+        throw std::runtime_error("Invalid path index in TTT_Move serialization: " + std::string(e.what()));
     }
     catch (const std::exception& e) {
         os.setstate(std::ios_base::failbit);
@@ -300,7 +302,7 @@ std::ostream& operator<<(std::ostream& os, const GameState& gameState) {
     }
     os << std::endl;
 
-    os << "[Move History][" << gameState.moveHistory.size() << "]" << std::endl;
+    os << "[TTT_Move History][" << gameState.moveHistory.size() << "]" << std::endl;
     for (const auto& move : gameState.moveHistory) {
         os << "    " << move << " " << std::endl;
     }
