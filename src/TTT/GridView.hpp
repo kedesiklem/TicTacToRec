@@ -10,12 +10,10 @@ class GridView {
     ImVec2 size;
 
 public:
-
-    GridLogic& grid_root;
+    TTT_GridLogic& grid_root;
     float ratio;
 
-
-    GridView(GridLogic& grid, float ratio)
+    GridView(TTT_GridLogic& grid, float ratio)
         : grid_root(grid), ratio(ratio) {}
 
     static std::pair<ImVec2, ImVec2> calculateDimensions(const ImVec2& size, int cols, int rows, float ratio) {
@@ -44,19 +42,19 @@ public:
         );
     }
 
-    void update(const ImVec2& pos, const ImVec2& size){
+    void update(const ImVec2& pos, const ImVec2& size) {
         this->pos = pos;
         this->size = size;
     }
 
-    void draw(Path targetSubGridPath = {}){
+    void draw(Path targetSubGridPath = {}) {
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
         draw(draw_list, grid_root, pos, size, targetSubGridPath);
     }
 
-    void draw(ImDrawList* draw_list, const GridLogic& grid, const ImVec2& pos, const ImVec2& size, Path targetSubGridPath = {}, Path currentPath = {}, bool locked = false) {
+    void draw(ImDrawList* draw_list, const TTT_GridLogic& grid, const ImVec2& pos, const ImVec2& size, Path targetSubGridPath = {}, Path currentPath = {}, bool locked = false) {
         
-        locked |= grid.isLockedShaped();
+        locked |= grid.isLocked();
         locked |= !starts_with(currentPath, targetSubGridPath);
 
         std::pair<ImVec2, ImVec2> dim = calculateDimensions(size, grid.getCols(), grid.getRows(), ratio);
@@ -75,35 +73,31 @@ public:
             }
         }
 
-        // Dessin de la forme globale si la grille est gagnée
-        if (grid.isLockedShaped()) {
+        // Draw global shape if grid is won
+        if (grid.isLocked()) {
             drawShape(draw_list, pos, size, grid.getShape());
         }
     }
 
-
     std::optional<Path> handleGridInteraction(Path targetSubGridPath = {}) {
-        if(ImGui::IsMouseClicked(ImGuiMouseButton(0))){
+        if(ImGui::IsMouseClicked(ImGuiMouseButton(0))) {
             return handleGridInteractionImpl(grid_root, pos, size, targetSubGridPath);
-        }else{
+        } else {
             return std::nullopt;
         }
     }
 
-
-    
 private:
-
-    std::optional<Path> handleGridInteractionImpl(const GridLogic& grid, const ImVec2& pos, const ImVec2& size, Path targetSubGridPath, Path currentPath = {}) {
-        // Vérifie si la souris est sur cette cellule
+    std::optional<Path> handleGridInteractionImpl(const TTT_GridLogic& grid, const ImVec2& pos, const ImVec2& size, Path targetSubGridPath, Path currentPath = {}) {
+        // Check if mouse is over this cell
         bool hovered = isHovered(pos, size);
         
-        // Si c'est une feuille et qu'on a cliqué dessus
+        // If it's a leaf and we clicked on it
         if (grid.isLeaf() && hovered) {
             return currentPath;
         }
         
-        // Si ce n'est pas une feuille, on parcourt les sous-grilles
+        // If not a leaf, traverse subgrids
         if (!grid.isLeaf()) {
             std::pair<ImVec2, ImVec2> dim = calculateDimensions(size, grid.getCols(), grid.getRows(), ratio);
             
@@ -132,50 +126,48 @@ private:
         return std::nullopt;
     }
 
-
-    bool isHovered(const ImVec2& pos, const ImVec2& size){
+    bool isHovered(const ImVec2& pos, const ImVec2& size) {
         ImVec2 mousePos = ImGui::GetMousePos();
         return 
             ((mousePos.x > pos.x) && (mousePos.x < (pos.x + size.x))) &&
             ((mousePos.y > pos.y) && (mousePos.y < (pos.y + size.y)));
     }
 
-    void drawShape(ImDrawList* draw_list, const ImVec2& pos, const ImVec2& size, GridShape shape){
+    void drawShape(ImDrawList* draw_list, const ImVec2& pos, const ImVec2& size, TTT_Shape shape) {
         switch(shape) {
-            case GridShape::CROSS:
+            case TTT_Shape::CROSS:
                 drawCross(draw_list, pos, size, size.x / 10);
                 break;
-            case GridShape::CIRCLE:
+            case TTT_Shape::CIRCLE:
                 drawCircle(draw_list, pos, size, size.x / 10);
                 break;
-            case GridShape::DRAW:
+            case TTT_Shape::DRAW:
                 drawDrawSymbol(draw_list, pos, size);
                 break;
             default: break;
         }
     }
 
-    void drawLeafCell(ImDrawList* draw_list, const GridLogic& grid, const ImVec2& pos, const ImVec2& size, bool locked) {
-        
-        if(locked){
-            ImU32 bg_color =    (grid.getShape() == GridShape::CROSS) ? IM_COL32(255, 0, 0, 50) : 
-                                (grid.getShape() == GridShape::CIRCLE) ? IM_COL32(0, 0, 255, 100) : 
-                                IM_COL32(100, 100, 100, 255);  // Gris Locked
+    void drawLeafCell(ImDrawList* draw_list, const TTT_GridLogic& grid, const ImVec2& pos, const ImVec2& size, bool locked) {
+        if(locked) {
+            ImU32 bg_color = (grid.getShape() == TTT_Shape::CROSS) ? IM_COL32(255, 0, 0, 50) : 
+                            (grid.getShape() == TTT_Shape::CIRCLE) ? IM_COL32(0, 0, 255, 100) : 
+                            IM_COL32(100, 100, 100, 255);  // Gray for locked
             draw_list->AddRectFilled(pos, pos + size, bg_color, 4.0f);
-        }else{
-            // Couleur de fond
-            ImU32 bg_color = IM_COL32(150, 150, 150, 255);  // Gris Base
+        } else {
+            // Base background color
+            ImU32 bg_color = IM_COL32(150, 150, 150, 255);  // Base gray
             
-            // Surcharge si hover
-            if (isHovered(pos, size)){
-                bg_color = IM_COL32(255, 255, 255, 255);  // Gris Hovered
+            // Override if hovered
+            if (isHovered(pos, size)) {
+                bg_color = IM_COL32(255, 255, 255, 255);  // Hovered white
             }
 
             draw_list->AddRectFilled(pos, pos + size, bg_color, 4.0f);
         }
     }
 
-    // Helpers de dessin
+    // Drawing helpers
     void drawCross(ImDrawList* draw_list, const ImVec2& pos, const ImVec2 size, float thickness = 10.0f) {
         float margin_x = size.x * 0.2f;
         float margin_y = size.y * 0.2f;
@@ -193,7 +185,7 @@ private:
         float margin_x = size.x * 0.15f;
         float margin_y = size.x * 0.15f;
         ImVec2 center = {pos.x + size.x/2, pos.y + size.y/2};
-        ImVec2 radius = {(size.x - margin_x*2) / 2, (size.y - margin_y*2) / 2};
+        ImVec2 radius = {(size.x - margin_x*2)/2, (size.y - margin_y*2)/2};
         draw_list->AddEllipse(center, radius, IM_COL32(0, 0, 255, 255), 0, 0, thickness);
     }
 

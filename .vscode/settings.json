@@ -70,6 +70,8 @@
     "cinttypes": "cpp",
     "typeinfo": "cpp",
     "variant": "cpp",
-    "__nullptr": "cpp"
+    "__nullptr": "cpp",
+    "any": "cpp",
+    "filesystem": "cpp"
   } // Arguments supplémentaires
 }

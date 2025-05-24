@@ -1,57 +1,56 @@
 #include "GameState.hpp"
 
-GridShape defaultPlayer() {
-    return GridShape::CROSS;
+TTT_Shape defaultPlayer() {
+    return TTT_Shape::CROSS;
 }
 
-bool GameState::isBotPlayer(GridShape shape) {
+bool GameState::isBotPlayer(TTT_Shape shape) {
     return (autoMode);
 }
 
-bool GameState::playMove(Path path)
-{
+bool GameState::playMove(Path path) {
     return playMove(path, currentPlayer);
 }
 
-bool GameState::playMove(Path path, GridShape player)
-{
+bool GameState::playMove(Path path, TTT_Shape player) {
     redoHistory.clear();
     return playMoveBase(path, player);
 }
 
-bool GameState::playMoveBase(Path path, GridShape player)
-{
-    if(starts_with(path, targetSubGridPath))
-        if(grid.grid_root.playMove(path, player)){
+bool GameState::playMoveBase(Path path, TTT_Shape player) {
+    if(starts_with(path, targetSubGridPath)) {
+        if(grid.grid_root.playMove(path, player)) {
             endTurn(path);
             return true;
         }
+    }
     return false;
 }
 
 bool GameState::playRandom() {
     auto move = grid.grid_root.getRandomAvailableMove(targetSubGridPath);
-    if(move){
+    if(move) {
         return playMove(move.value(), currentPlayer);
-    }else{
+    } else {
         throw "No available move";
     }
 }
 
-bool GameState::playTurn(){
-    if(isBotPlayer(currentPlayer)){
+bool GameState::playTurn() {
+    if(isBotPlayer(currentPlayer)) {
         return playRandom();
-    }else{
+    } else {
         auto path = grid.handleGridInteraction();
-        if(path){
+        if(path) {
             return playMove(path.value());
-        }return false;
+        }
+        return false;
     }
 }
 
 void GameState::endTurn(const Path lastPlayedSubGridPath) {
     moveHistory.push_back({lastPlayedSubGridPath, targetSubGridPath, currentPlayer});
-    currentPlayer = GridLogic::nextShapePlayable(currentPlayer);
+    currentPlayer = TTT_Cell::nextShapePlayable(currentPlayer);
 
     if (lastPlayedSubGridPath.empty()) {
         targetSubGridPath.clear();
@@ -64,7 +63,7 @@ void GameState::endTurn(const Path lastPlayedSubGridPath) {
     Path currentPath;
     for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
         currentPath.push_back(targetSubGridPath[i]);        
-        if (grid.grid_root.getGridFromPath(currentPath).isLockedShaped()) {
+        if (grid.grid_root.getGridFromPath(currentPath).isLocked()) {
             currentPath.pop_back();
             targetSubGridPath.assign(currentPath.begin(), currentPath.end());
             break;
@@ -90,9 +89,8 @@ bool GameState::undoLastMove() {
     targetSubGridPath = lastMove.target;
     currentPlayer = lastMove.shape;
 
-
-    GridLogic* currentGrid = &grid.grid_root;
-    currentGrid->setShape(GridShape::NONE);
+    TTT_GridLogic* currentGrid = &grid.grid_root;
+    currentGrid->setShape(TTT_Shape::NONE);
 
     for (size_t i = 0; i < lastMove.path.size(); ++i) {
         int index = lastMove.path[i];
@@ -101,9 +99,7 @@ bool GameState::undoLastMove() {
         int c = index % cols;
 
         currentGrid = &currentGrid->getSubGrid(r, c);
-        currentGrid->setShape(GridShape::NONE);
-        
-
+        currentGrid->setShape(TTT_Shape::NONE);
     }
 
     return true;
@@ -140,7 +136,7 @@ bool GameState::saveState(const std::string& filename) const {
                     outFile << move.path[i];
                 }
             }
-            outFile << ">" << GridLogic::GridShapeToString(move.shape);
+            outFile << ">" << TTT_Cell::ShapeToString(move.shape);
             if (!move.target.empty()) {
                 outFile << "@";
                 for (size_t i = 0; i < move.target.size(); ++i) {
@@ -162,7 +158,7 @@ bool GameState::saveState(const std::string& filename) const {
                     outFile << move.path[i];
                 }
             }
-            outFile << ">" << GridLogic::GridShapeToString(move.shape);
+            outFile << ">" << TTT_Cell::ShapeToString(move.shape);
             if (!move.target.empty()) {
                 outFile << "@";
                 for (size_t i = 0; i < move.target.size(); ++i) {
@@ -209,7 +205,7 @@ bool GameState::loadState(const std::string& filename) {
                 std::string rest = line.substr(shapePos + 1);
                 
                 size_t targetPos = rest.find('@');
-                GridShape shape = GridLogic::StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
+                TTT_Shape shape = TTT_Cell::StringToShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
                 
                 Path path;
                 if (pathStr != "root") {
@@ -242,7 +238,7 @@ bool GameState::loadState(const std::string& filename) {
                 std::string rest = line.substr(shapePos + 1);
                 
                 size_t targetPos = rest.find('@');
-                GridShape shape = GridLogic::StringToGridShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
+                TTT_Shape shape = TTT_Cell::StringToShape(targetPos == std::string::npos ? rest : rest.substr(0, targetPos));
                 
                 Path path;
                 if (pathStr != "root") {
@@ -274,13 +270,24 @@ bool GameState::loadState(const std::string& filename) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Move& move) {
-    os << move.shape << " ";
-    for(size_t i = 0; i < move.path.size() - 1; ++i) {
-        os << move.path[i] << ",";
+    try {
+        os << move.shape << " ";
+        if (!move.path.empty()) {
+            os << move.path.at(0);
+            for (size_t i = 1; i < move.path.size(); ++i) {
+                os << "," << move.path.at(i);
+            }
+        }
     }
-    if(move.path.size() > 0) {
-        os << move.path[move.path.size() - 1];
+    catch (const std::out_of_range& e) {
+        os.setstate(std::ios_base::failbit);
+        throw std::runtime_error("Invalid path index in Move serialization: " + std::string(e.what()));
     }
+    catch (const std::exception& e) {
+        os.setstate(std::ios_base::failbit);
+        throw;
+    }
+
     return os;
 }
 

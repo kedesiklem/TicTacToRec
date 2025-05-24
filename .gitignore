@@ -3,15 +3,13 @@
 *.o
 
 tictactorec
+tictactorec_tests
 imgui.ini
 
 CMakeFiles*
 CMakeCache.txt
+*.cmake
 Makefile
-cmake_install.cmake
-
-Testing/*
-test_main_include*
 
 DartConfiguration.tcl
 

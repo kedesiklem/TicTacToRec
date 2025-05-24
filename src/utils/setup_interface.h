@@ -45,7 +45,7 @@ namespace {
 
         gameState.grid.update(window_pos + marging, ImVec2{min_size, min_size} - (marging * 2));
 
-        if(!gameState.grid.grid_root.isLockedShaped()){
+        if(!gameState.grid.grid_root.isLocked()){
             gameState.playTurn();
         }
 
@@ -78,7 +78,7 @@ namespace {
             ImGui::SliderInt("Grid Depth", &grid_depth, 0, 3);
     
             if (ImGui::Button("Apply Grid Settings")) {
-                modeManager().grid.grid_root = GridLogic(grid_rows, grid_cols, grid_depth);
+                modeManager().grid.grid_root = TTT_GridLogic(grid_rows, grid_cols, grid_depth);
                 modeManager().reset();
             }
         }

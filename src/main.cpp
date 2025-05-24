@@ -1,5 +1,5 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
-
+#define DEBUG
 
 #include <config.h>
 #include <iostream>
@@ -48,7 +48,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialisation jeu
-    GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
+    TTT_GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
     GridView gridV(grid, 0.985);
     GameModeManager gameMode(gridV);
     gameMode.changeGameMode("RandomStart");

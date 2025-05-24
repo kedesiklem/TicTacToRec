@@ -9,16 +9,14 @@
 struct Move {
     Path path;
     Path target;
-    GridShape shape;
+    TTT_Shape shape;
 };
 
 class GameState {
 public:
-
     bool autoMode = false;
-
     GridView& grid;
-    GridShape currentPlayer;
+    TTT_Shape currentPlayer;
     Path targetSubGridPath;
     std::vector<Move> moveHistory;
     std::vector<Move> redoHistory;
@@ -27,17 +25,12 @@ public:
 
     virtual void showParam(){};
 
-    bool isBotPlayer(GridShape shape);
-
-    bool playMove(Path path, GridShape player);
+    bool isBotPlayer(TTT_Shape shape);
+    bool playMove(Path path, TTT_Shape player);
     bool playMove(Path path);
-    bool playMoveBase(Path path, GridShape player);
-
+    bool playMoveBase(Path path, TTT_Shape player);
     bool playRandom();
-
     virtual bool playTurn();
-    
-
     void endTurn(const Path lastPlayedSubGridPath);
     
     bool saveState(const std::string& filename) const;

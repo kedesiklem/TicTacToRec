@@ -2,7 +2,7 @@
 
 bool GameRandomStart::playTurn() {
     if(fullRun){
-        while(!grid.grid_root.isLockedShaped()){playRandom();};
+        while(!grid.grid_root.isLocked()){playRandom();};
         fullRun = false;
         return true;
     }else if((isBotPlayer(currentPlayer)) || ((startMoveCount > moveHistory.size()) && autoStart)){

@@ -16,3 +16,9 @@ option(BUILD_TESTS "Build tests" ON)
 
 # Configuration des sous-répertoires
 add_subdirectory(src)
+
+# Ajout des tests si l'option est activée
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

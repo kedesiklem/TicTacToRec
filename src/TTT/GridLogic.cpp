@@ -1,121 +1,21 @@
 #include "GridLogic.hpp"
 
 
-GridLogic::GridLogic(int rows, int cols, int depth) : rows(rows), cols(cols) {
-    if (rows > 1 || cols > 1) {
-        subGrids.resize(rows);
-        for (int r = 0; r < rows; ++r) {
-            subGrids[r].reserve(cols);
-            for (int c = 0; c < cols; ++c) {
-                if(depth > 0) {
-                    subGrids[r].emplace_back(rows, cols, depth - 1);
-                } else {
-                    subGrids[r].emplace_back(1, 1, 0);
-                }
-            }
-        }
-    }
-}
 
-GridShape GridLogic::nextShapePlayable(const GridShape shape){
-    switch (shape){
-        case GridShape::CROSS:
-            return GridShape::CIRCLE;
-        
-        case GridShape::CIRCLE:
-            return GridShape::CROSS;
+TTT_Shape TTT_GridLogic::checkVictory(){
 
-        default:
-            return shape;
-    }
-}
-
-std::string GridLogic::GridShapeToString(GridShape shape) {
-    switch(shape) {
-        case GridShape::NONE: return "N";
-        case GridShape::CROSS: return "X";
-        case GridShape::CIRCLE: return "O";
-        case GridShape::DRAW: return "=";
-        default: return "?";
-    }
-}
-
-GridShape GridLogic::StringToGridShape(const std::string& str) {
-    if (str == "N") return GridShape::NONE;
-    if (str == "X") return GridShape::CROSS;
-    if (str == "O") return GridShape::CIRCLE;
-    if (str == "=") return GridShape::DRAW;
-    return GridShape::NONE; // Valeur par défaut
-}
-
-void GridLogic::resetGrid() {
-    currentShape = GridShape::NONE;
-    for (auto& row : subGrids) {
-        for (auto& subGrid : row) {
-            subGrid.resetGrid();
-        }
-    }
-}
-
-GridLogic& GridLogic::getSubGrid(int index){
-    if (index < 0 || index >= rows * cols) {
-        throw std::out_of_range("Invalid subgrid indices");
-    }
-
-    int r = index / cols;
-    int c = index % cols;
-
-    return getSubGrid(r,c);
-};
-
-const GridLogic& GridLogic::getSubGrid(int index) const {
-    if (index < 0 || index >= rows * cols) {
-        throw std::out_of_range("Invalid subgrid indices [const]");
-    }
-
-    int r = index / cols;
-    int c = index % cols;
-
-    return getSubGrid(r,c);
-};
-
-GridLogic& GridLogic::getSubGrid(int row, int col) {
-    if (row >= 0 && row < rows && col >= 0 && col < cols) {
-        return subGrids[row][col];
-    }
-    throw std::out_of_range("Invalid subgrid indices");
-};
-
-const GridLogic& GridLogic::getSubGrid(int row, int col) const {
-    if (row >= 0 && row < rows && col >= 0 && col < cols) {
-        return subGrids[row][col];
-    }
-    throw std::out_of_range("Invalid subgrid indices [const]");
-};
-
-GridLogic GridLogic::getGridFromPath(const Path& path) {
-    GridLogic* grid = this;
-    for (int index : path) {
-        int row = index / cols;
-        int col = index % cols;
-        grid = &grid->subGrids[row][col];
-    }
-    return *grid;
-}
-
-GridShape GridLogic::checkVictory(){
     if(isLeaf()){
-        return currentShape;
+        return cell;
     }
     bool win = true;
     // Vérification des lignes
     for (int r = 0; r < rows; ++r) {
-        auto first = getSubGrid(r, 0).currentShape;
-        if (!isWinningShape(first)) continue;
+        TTT_Shape first = getSubGrid(r, 0).getCell();
+        if (!TTT_Cell::isWinning(first)) continue;
         
         win = true;
         for (int c = 1; c < cols; ++c) {
-            if (getSubGrid(r, c).currentShape != first) {
+            if (getSubGrid(r, c).getCell() != first) {
                 win = false;
                 break;
             }
@@ -125,12 +25,12 @@ GridShape GridLogic::checkVictory(){
 
     // Vérification des colonnes
     for (int c = 0; c < cols; ++c) {
-        auto first = getSubGrid(0, c).currentShape;
-        if (!isWinningShape(first)) continue;
+        auto first = getSubGrid(0, c).getCell();
+        if (!TTT_Cell::isWinning(first)) continue;
         
         win = true;
         for (int r = 1; r < rows; ++r) {
-            if (getSubGrid(r, c).currentShape != first) {
+            if (getSubGrid(r, c).getCell() != first) {
                 win = false;
                 break;
             }
@@ -138,51 +38,56 @@ GridShape GridLogic::checkVictory(){
         if (win) return first;
     }
 
-    // Vérification de la diagonale principale
-    auto first = getSubGrid(0, 0).currentShape;
-    if (!isWinningShape(first)) {
-        win = true;
-        for (int i = 1; i < std::min(rows,cols); ++i) {
-            if (getSubGrid(i, i).currentShape != first) {
-                win = false;
-                break;
+    // Si grille carré verification des diagonal
+    if(cols == rows){
+        // Vérification de la diagonale principale
+        auto first = getSubGrid(0, 0).getCell();
+        if (TTT_Cell::isWinning(first)) {
+            win = true;
+            for (int i = 1; i < rows; ++i) {
+                if (getSubGrid(i, i).getCell() != first) {
+                    win = false;
+                    break;
+                }
             }
+            if (win) return first;
         }
-        if (win) return first;
-    }
+        
+        
 
-    // Vérification de l'anti-diagonale
-    first = getSubGrid(0, cols-1).currentShape;
-    if (!isWinningShape(first)) {
-        win = true;
-        for (int i = 1; i < std::min(rows,cols); ++i) {
-            if (getSubGrid(i, cols-1-i).currentShape != first) {
-                win = false;
-                break;
+        // Vérification de l'anti-diagonale
+        first = getSubGrid(0, cols-1).getCell();
+        if (TTT_Cell::isWinning(first)) {
+            win = true;
+            for (int i = 1; i < rows; ++i) {
+                if (getSubGrid(i, cols-1-i).getCell() != first) {
+                    win = false;
+                    break;
+                }
             }
+            if (win) return first;
         }
-        if (win) return first;
     }
 
     // Vérification du match nul
     for (int r = 0; r < rows; ++r) {
         for (int c = 0; c < cols; ++c) {
-            if (!getSubGrid(r, c).isLockedShaped()) {
-                return GridShape::NONE;
+            if (!getSubGrid(r, c).isLocked()) {
+                return TTT_Shape::NONE;
             }
         }
     }
 
-    return GridShape::DRAW;
+    return TTT_Shape::DRAW;
 }
 
-bool GridLogic::playMove(const Path &path, GridShape player){
+bool TTT_GridLogic::playMove(const Path &path, TTT_Shape player){
     return playMove(path, player, 0, false);
 }
 
-bool GridLogic::playMove(const Path &path, GridShape player, int step, bool locked, Path currentPath)
+bool TTT_GridLogic::playMove(const Path &path, TTT_Shape player, int step, bool locked, Path currentPath)
 {
-    locked |= isLockedShaped();
+    locked |= isLocked();
     locked |= !starts_with(currentPath, path);
 
     if(isLeaf()){
@@ -200,40 +105,65 @@ bool GridLogic::playMove(const Path &path, GridShape player, int step, bool lock
     return false;
 }
 
-void GridLogic::undoMove(const Path &path, int step)
-{
-    if(step == path.size()){
-        if(isLeaf() && isLockedShaped()){
-            setShape(GridShape::NONE);
-        }else{
-            throw("Invalid Path");
+void TTT_GridLogic::undoMove(const Path &path, int step) {
+    if(step == path.size()) {
+        if(isLeaf() && isLocked()) {
+            setShape(TTT_Shape::NONE);
+        } else {
+            throw std::runtime_error("Invalid Path");
         }
-    }else{
-        setShape(GridShape::NONE);
-        getSubGrid(path[step]).undoMove(path, step +1);
+    } else {
+        setShape(TTT_Shape::NONE);
+        getSubGrid(path[step]).undoMove(path, step + 1); // Plus besoin de cast
     }
 }
 
-std::vector<Path> GridLogic::getAvailableMoves(const Path &target, Path currentPath) const
-{
-    std::vector<Path> result;
+TTT_Shape TTT_Cell::nextShapePlayable(const TTT_Shape shape){
+    switch (shape){
+        case TTT_Shape::CROSS:
+            return TTT_Shape::CIRCLE;
+        
+        case TTT_Shape::CIRCLE:
+            return TTT_Shape::CROSS;
 
-    bool locked = false;
-    locked |= isLockedShaped();
-    locked |= !starts_with(currentPath, target);
-    if (locked) {
-        return result;
+        default:
+            return shape;
     }
+}
+
+std::string TTT_Cell::ShapeToString(TTT_Shape shape) {
+    switch(shape) {
+        case TTT_Shape::NONE: return "N";
+        case TTT_Shape::CROSS: return "X";
+        case TTT_Shape::CIRCLE: return "O";
+        case TTT_Shape::DRAW: return "=";
+        default: return "?";
+    }
+}
+
+TTT_Shape TTT_Cell::StringToShape(const std::string& str) {
+    if (str == "N") return TTT_Shape::NONE;
+    if (str == "X") return TTT_Shape::CROSS;
+    if (str == "O") return TTT_Shape::CIRCLE;
+    if (str == "=") return TTT_Shape::DRAW;
+    return TTT_Shape::NONE; // Valeur par défaut
+}
+
+std::vector<Path> TTT_GridLogic::getAvailableMoves(const Path &target, Path currentPath) const {
+    std::vector<Path> result;
+    bool locked = isLocked() || !starts_with(currentPath, target);
+    
+    if (locked) return result;
 
     if (isLeaf()) {
         result.push_back(currentPath);
     } else {
-        for (int r = 0; r < rows; ++r) {
-            for (int c = 0; c < cols; ++c) {
-                int index = r * cols + c;
+        for (int r = 0; r < getRows(); ++r) {
+            for (int c = 0; c < getCols(); ++c) {
+                int index = r * getCols() + c;
                 currentPath.push_back(index);
-                auto tmp = getSubGrid(index).getAvailableMoves(target, currentPath);
-                result.insert(result.end(), tmp.begin(), tmp.end());
+                auto subMoves = getSubGrid(index).getAvailableMoves(target, currentPath);
+                result.insert(result.end(), subMoves.begin(), subMoves.end());
                 currentPath.pop_back();
             }
         }
@@ -241,30 +171,10 @@ std::vector<Path> GridLogic::getAvailableMoves(const Path &target, Path currentP
     return result;
 }
 
-std::optional<Path> GridLogic::getRandomAvailableMove(const Path& target, Path currentPath) const
-{
-    std::optional<Path> result = std::nullopt;
-
-    bool locked = false;
-    locked |= isLockedShaped();
-    locked |= !starts_with(currentPath, target);
-    if (locked) {
-        return result;
-    }
-
-    if (isLeaf()) {
-        return currentPath;
-    } else {
-        int random_start = rand() % (rows * cols);
-        for(int i = random_start; i < random_start + (rows * cols); ++i){
-            int index = i % (rows * cols);
-            currentPath.push_back(index);
-            auto tmp = getSubGrid(index).getRandomAvailableMove(target, currentPath);
-            if(tmp){
-                return tmp;
-            }
-            currentPath.pop_back();
-        }
-    }
-    return result;
+std::optional<Path> TTT_GridLogic::getRandomAvailableMove(const Path& target, Path currentPath) const {
+    auto allMoves = getAvailableMoves(target, currentPath);
+    if (allMoves.empty()) return std::nullopt;
+    
+    int randomIndex = rand() % allMoves.size();
+    return allMoves[randomIndex];
 }
