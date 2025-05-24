@@ -3,7 +3,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "../external/imgui/imgui.h"
-#include "GridLogic.hpp"
+#include "TTT_GridLogic.hpp"
 
 class GridView {
     ImVec2 pos;

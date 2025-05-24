@@ -3,8 +3,8 @@
 
 #include <config.h>
 #include <iostream>
-#include <setup_interface.h>
-#include <setup_shortcut.h>
+#include "utils/setup_interface.h"
+#include "utils/setup_shortcut.h"
 
 #define GRID_SIZE 3
 #define GRID_REC 1

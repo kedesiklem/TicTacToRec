@@ -1,4 +1,4 @@
-#include "GridLogic.hpp"
+#include "TTT_GridLogic.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 #include <stdexcept>

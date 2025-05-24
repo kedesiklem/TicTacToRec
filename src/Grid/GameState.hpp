@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MonteCarloBot.hpp"
 #include "GridView.hpp"
 #include <fstream>
 #include <sstream>

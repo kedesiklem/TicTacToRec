@@ -1,7 +1,7 @@
 # Configuration des répertoires
 set(IMGUI_DIR external/imgui)
 set(IMGUI_FILE_EXPLORER_DIR external/imgui_file_explorer)
-set(TTT_DIR TTT)
+set(GRID_DIR Grid)
 set(OTHER_DIR utils)
 
 # Sources ImGui
@@ -16,11 +16,11 @@ set(IMGUI_SOURCES
 )
 
 # Sources du jeu
-file(GLOB TTT_SOURCES ${TTT_DIR}/*.cpp)
+file(GLOB GRID_SOURCES ${GRID_DIR}/*.cpp)
 
 # Création de la bibliothèque principale
 add_library(game_lib STATIC
-    ${TTT_SOURCES}
+    ${GRID_SOURCES}
     ${IMGUI_SOURCES}
 )
 
@@ -30,7 +30,7 @@ target_include_directories(game_lib PUBLIC
     ${IMGUI_DIR}
     ${IMGUI_FILE_EXPLORER_DIR}
     ${IMGUI_DIR}/backends
-    ${TTT_DIR}
+    ${GRID_DIR}
     ${OTHER_DIR}
 )
 

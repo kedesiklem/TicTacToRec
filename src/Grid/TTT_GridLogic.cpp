@@ -1,6 +1,6 @@
-#include "GridLogic.hpp"
-
-
+#include "TTT_GridLogic.hpp"
+#include <numeric>
+#include <algorithm>
 
 TTT_Shape TTT_GridLogic::checkVictory(){
 
@@ -172,9 +172,27 @@ std::vector<Path> TTT_GridLogic::getAvailableMoves(const Path &target, Path curr
 }
 
 std::optional<Path> TTT_GridLogic::getRandomAvailableMove(const Path& target, Path currentPath) const {
-    auto allMoves = getAvailableMoves(target, currentPath);
-    if (allMoves.empty()) return std::nullopt;
+    bool locked = isLocked() || !starts_with(currentPath, target);
     
-    int randomIndex = rand() % allMoves.size();
-    return allMoves[randomIndex];
+    if (locked) return std::nullopt;
+
+    if (isLeaf()) {
+        return currentPath;
+    } else {
+        // Crée une liste d'indices mélangée pour exploration aléatoire
+        std::vector<int> indices(getRows() * getCols());
+        std::iota(indices.begin(), indices.end(), 0);
+        std::random_shuffle(indices.begin(), indices.end());
+
+        for (int index : indices) {
+            currentPath.push_back(index);
+            auto move = getSubGrid(index).getRandomAvailableMove(target, currentPath);
+            if (move) {
+                return move; // Retourne le premier mouvement valide trouvé
+            }
+            currentPath.pop_back();
+        }
+    }
+
+    return std::nullopt;
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameModeManager.hpp"
+#include "../Grid/GameModeManager.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -25,7 +25,7 @@ namespace {
         ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main, ImGuiDir_Right, 0.3f, nullptr, &dock_main);
         
         ImGui::DockBuilderDockWindow("Game", dock_main);
-        ImGui::DockBuilderDockWindow("Infos", dock_right);
+        ImGui::DockBuilderDockWindow("Settings", dock_right);
         ImGui::DockBuilderDockWindow("Game Settings", dock_right);
         
         ImGui::DockBuilderFinish(dockspace_id);
@@ -37,25 +37,46 @@ namespace {
         
         ImVec2 window_pos = ImGui::GetCursorScreenPos();
         ImVec2 window_size = ImGui::GetContentRegionAvail();
-
-        float min_size = std::min(window_size.x, window_size.y);
-        const ImVec2 marging = {30,30};
-        
-        // Création de la vue avec le ratio contrôlé par le slider
-
-        gameState.grid.update(window_pos + marging, ImVec2{min_size, min_size} - (marging * 2));
-
-        if(!gameState.grid.grid_root.isLocked()){
-            gameState.playTurn();
-        }
-
-
     
-        gameState.grid.draw(gameState.targetSubGridPath);        
+        if (window_size.x > 0 && window_size.y > 0) {  // Safety check
+            float min_size = std::min(window_size.x, window_size.y);
+            const ImVec2 marging = {30,30};
+            ImVec2 available_size = ImVec2{min_size, min_size} - (marging * 2);
+    
+            if (available_size.x > 0 && available_size.y > 0) {
+                gameState.grid.update(window_pos + marging, available_size);
+    
+                if(!gameState.grid.grid_root.isLocked()) {
+                    gameState.playTurn();
+                }
+    
+                gameState.grid.draw(gameState.targetSubGridPath);
+            }
+        }
+        
         ImGui::End();
         ImGui::PopStyleVar();
     }
-
+    void show_settings_window(ImGuiIO& io) {
+        ImGui::Begin("Settings");
+    
+        // Font size control
+        static float font_size = io.FontGlobalScale;
+        ImGui::SliderFloat("Font Size", &font_size, 0.5f, 2.0f, "%.2f");
+        if (ImGui::Button("Apply Font Size")) {
+            io.FontGlobalScale = font_size;
+        }
+        ImGui::Separator();
+        
+        // Background color control
+        static ImVec4 bg_color = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
+        ImGui::ColorEdit4("Background Color", (float*)&bg_color);
+        if (ImGui::Button("Apply Background Color")) {
+            ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = bg_color;
+        }
+    
+        ImGui::End();
+    }
     void show_mode_window(GameModeManager& modeManager) {
         ImGui::Begin("Game Settings");
     
@@ -86,7 +107,7 @@ namespace {
         // Deuxième section déroulante pour la sélection du mode de jeu
         if (ImGui::CollapsingHeader("Game Mode")) {
             const auto& modes = modeManager.getAvailableModes();
-            
+            ImGui::BeginGroup();
             // Afficher la liste des modes disponibles avec des boutons
             for (const auto& [name, _] : modes) {
                 if (ImGui::Button(name.c_str())) {
@@ -102,6 +123,7 @@ namespace {
                     ImGui::NewLine();
                 }
             }
+            ImGui::EndGroup();
         }
         
         auto& gameState = modeManager();
@@ -123,43 +145,45 @@ namespace {
             ImGui::Text("Current player : %s", str.str().c_str());
             str.str("");
 
-            ImGui::Separator();        
-            ImGui::Columns(2, "historyColumns", false);
+            if (ImGui::CollapsingHeader("Move History")) {
+                ImGui::Separator();        
+                ImGui::Columns(2, "historyColumns", false);
 
-            ImGui::Text("[History | %ld]", gameState.moveHistory.size());
-            ImGui::NextColumn();
-            ImGui::Text("[Redo]");
-            ImGui::NextColumn();
-
-            size_t max_size = std::max(gameState.moveHistory.size(), gameState.redoHistory.size());
-            for (size_t i = 0; i < max_size; ++i) {
-                if (i < gameState.moveHistory.size()) {
-                    str << gameState.moveHistory[i];
-                    ImGui::Text("%s [%ld/%ld]", str.str().c_str(), i + 1, gameState.moveHistory.size());
-                    str.str("");
-                } else {
-                    ImGui::Text(" ");
-                }
-                
+                ImGui::Text("[History | %ld]", gameState.moveHistory.size());
+                ImGui::NextColumn();
+                ImGui::Text("[Redo]");
                 ImGui::NextColumn();
 
-                if (i < gameState.redoHistory.size()) {
-                    str << gameState.redoHistory[i];
-                    ImGui::Text("%s [%ld/%ld]", str.str().c_str(), i + 1, gameState.redoHistory.size());
-                    str.str("");
-                } else {
-                    ImGui::Text(" ");
+                size_t max_size = std::max(gameState.moveHistory.size(), gameState.redoHistory.size());
+                for (size_t i = 0; i < max_size; ++i) {
+                    if (i < gameState.moveHistory.size()) {
+                        str << gameState.moveHistory[i];
+                        ImGui::Text("%s [%ld/%ld]", str.str().c_str(), i + 1, gameState.moveHistory.size());
+                        str.str("");
+                    } else {
+                        ImGui::Text(" ");
+                    }
+                    
+                    ImGui::NextColumn();
+
+                    if (i < gameState.redoHistory.size()) {
+                        str << gameState.redoHistory[i];
+                        ImGui::Text("%s [%ld/%ld]", str.str().c_str(), i + 1, gameState.redoHistory.size());
+                        str.str("");
+                    } else {
+                        ImGui::Text(" ");
+                    }
+                    
+                    ImGui::NextColumn();
                 }
-                
-                ImGui::NextColumn();
+
+                ImGui::Columns(1);
+
             }
-
-            ImGui::Columns(1);
         }
         
         ImGui::End();
     }
-
     void setup_interface(GameModeManager& modeManager) {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
@@ -186,6 +210,7 @@ namespace {
             first_time = false;
             setup_init(dockspace_id);
         }
+        show_settings_window(ImGui::GetIO());
         show_game_window(modeManager());
         show_mode_window(modeManager);
     };

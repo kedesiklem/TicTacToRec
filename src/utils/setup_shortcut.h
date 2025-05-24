@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameState.hpp"
+#include "../Grid/GameModeManager.hpp"
 
 #include "emacsStyleShortCut.hpp"
 
@@ -112,10 +112,4 @@ void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, GameMo
 
     shortcutManager.addShortcut({{ImGuiKey_B, true}}, 
         new ToggleAutoMode(gameMode), "Toggle autoMode");
-
-    // shortcutManager.addShortcut({{ImGuiKey_L}}, 
-    //     new Lambda([]{}(std::cout << "Bidule" << std::endl;)), "Truc message");
-        
-    // shortcutManager.addShortcut({{ImGuiKey_M}}, 
-    //     new Lambda([]{}(std::cout << "Truc" << std::endl;)), "Truc message");
-}
+    }

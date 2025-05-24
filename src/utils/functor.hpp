@@ -4,9 +4,7 @@
 
 class Functor{
     public:
-        virtual void exec() = 0;
-        virtual ~Functor() = default;
-};
+        virtual void exec() = 0;};
 
 class Lambda : public Functor{
     std::function<void()> fun;
