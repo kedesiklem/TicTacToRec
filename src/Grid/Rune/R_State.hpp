@@ -16,6 +16,14 @@ public:
     void showParam() override {
         ImGui::Text("Rows: %d, Cols: %d", grid.getRows(), grid.getCols());
     }
+
+    void draw(){
+        auto path = view.draw(grid);
+        if(path) {
+            grid.toggleRune(path.value());
+            grid.updateSecteur();
+        }
+    }
 };
 
 }

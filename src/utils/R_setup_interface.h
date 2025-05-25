@@ -46,7 +46,7 @@ namespace Rune {
             if (available_size.x > 0 && available_size.y > 0) {
                 state.view.update(window_pos + marging, available_size);
     
-                state.view.draw(state.grid);
+                state.draw();
             }
         }
         

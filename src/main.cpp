@@ -4,10 +4,11 @@
 #include <config.h>
 #include <iostream>
 #include "utils/R_setup_interface.h"
+#include "utils/R_setup_shortcut.h"
 
 using namespace Rune;
 
-#define GRID_SIZE 3
+#define GRID_SIZE 5
 #define GRID_REC 1
 
 int main() {
@@ -50,9 +51,12 @@ int main() {
 
     // Initialisation jeu
     RuneLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
-    RuneView gridV(0.985);
+    RuneView gridV(0.9);
     RuneState state(gridV, grid);
     std::stringstream str;
+
+    ShortcutManager shortcutManager;
+    setupShortcuts(shortcutManager, window);
 
     LoadFonts(io, 40);
 
@@ -70,6 +74,9 @@ int main() {
         
         // Fin de la fenêtre de docking principale
         ImGui::End();
+
+        // Gestion des interactions
+        shortcutManager.update();
 
         // Rendu
         ImGui::Render();
