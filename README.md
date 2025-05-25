@@ -20,6 +20,7 @@ git submodule update --init --recursive
 
 Assurez-vous d'avoir installé :
 
+- **cmake**
 - **g++** (compilateur C++)
 - **GLFW** et **OpenGL** (bibliothèques graphiques)
 
@@ -39,37 +40,43 @@ sudo pacman -S gcc glfw-x11 glu                               # Arch
 
 ## Compilation
 
-### Via Makefile
+### Via CMake
 
 ```bash
+cmake .
 make
 ```
-
-Sinon, va falloir mettre les mains dans la tambouille.
 
 ## Utilisation
 
 ```bash
-./build/tictactorec
+./tictactorec
 ```
 
 ### Raccourci
 
-| Touche | Command    |
-| ------ | ---------- |
-| `U`    | Undo       |
-| `I`    | Redo       |
-| `R`    | Reset Game |
-| `Esc`  | Quit       |
+| Touche                  | Command    |
+| ----------------------- | ---------- |
+| `Ctrl + Z`              | Undo       |
+| `Ctrl + Y`              | Redo       |
+| `Ctrl + X, Ctrl + X`    | Reset Game |
+| `Esc`                   | Quit       |
 
 ## Fichiers
 
 - `src/` : Code source.
   - `main.cpp` : Point d'entrée, logique principale.
-  - `TTT/` : Backend.
-  - `utils` : Divers
+  - `Grid/` : Backend.
+    - `GridLogic.hpp` : Grilles recursives (template)
+    - `GridView.hpp` : Afficheurs de grilles recursives (template)
+    - `TTT/` : Implementation specifique au TicTacToeRec
+  - `utils/` : Divers
+    - `config.h` : Parametrage ImGui
+    - `emacsStyleShortCut.hpp` : Gestionnaire de racourcie fait maison
+    - `functor.hpp` : Utilitaire pour `emacsStyleShortCut.hpp`
   - `external/imgui/` : Dépendances de l'IHM.
-- `Makefile` : Compilation
+  - `external/imgui_file_explorer/` : Dépendances de l'IHM.
+- `CMakelists.txt` : Compilation
 - `TODO.org` : Tâches restantes (org-mode).
 - `README.md` : Documentation (Vous êtes ici).
 
