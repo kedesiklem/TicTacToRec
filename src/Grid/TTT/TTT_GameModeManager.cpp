@@ -4,13 +4,13 @@ using namespace TTT;
 
 bool GameRandomStart::playTurn() {
     if(fullRun){
-        while(!grid.grid.isLocked()){playRandom();};
+        while(!grid.isLocked()){playRandom();};
         fullRun = false;
         return true;
     }else if((isBotPlayer(currentPlayer)) || ((startMoveCount > moveHistory.size()) && autoStart)){
         return playRandom();
     }else{
-        auto path = grid.handleGridInteraction();
+        auto path = view.handleGridInteraction(grid);
         if(path){
             return playMove(path.value());
         }
@@ -59,10 +59,10 @@ void GameRandomStart::showParam(){
     };
 }
 
-GameModeManager::GameModeManager(TTT_GridView& grid) {
+GameModeManager::GameModeManager(TTT_GridView& view, TTT_GridLogic& grid) {
     // Enregistrement des modes disponibles
-    modeFactories["Classic"] = [&]() { return new GameState(grid); };
-    modeFactories["RandomStart"] = [&]() { return new GameRandomStart(grid); };
+    modeFactories["Classic"] = [&]() { return new GameState(view, grid); };
+    modeFactories["RandomStart"] = [&]() { return new GameRandomStart(view, grid); };
     
     // Mode par défaut
     changeGameMode("Classic");

@@ -5,7 +5,7 @@
 
 namespace TTT {
 
-    class TTT_GridView : public GridView<TTT_GridLogic> {
+    class TTT_GridView : public GridView{
 
         std::optional<Path> handleGridInteractionImpl(const TTT_GridLogic& grid, const ImVec2& pos, const ImVec2& size, Path targetSubGridPath, Path currentPath = {}) {
             // Check if mouse is over this cell
@@ -108,10 +108,10 @@ namespace TTT {
 
     public : 
 
-        TTT_GridView(TTT_GridLogic& grid, float ratio = 0.8f)
-            : GridView<TTT_GridLogic>(grid, ratio){}
+        TTT_GridView(float ratio = 0.8f)
+            : GridView(ratio){}
 
-        void draw(Path targetSubGridPath = {}) {
+        void draw(TTT_GridLogic& grid, Path targetSubGridPath = {}) {
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
             draw(draw_list, grid, pos, size, targetSubGridPath);
         }
@@ -143,7 +143,7 @@ namespace TTT {
             }
         }
 
-        std::optional<Path> handleGridInteraction(Path targetSubGridPath = {}) {
+        std::optional<Path> handleGridInteraction(TTT_GridLogic& grid, Path targetSubGridPath = {}) {
             if(ImGui::IsMouseClicked(ImGuiMouseButton(0))) {
                 return handleGridInteractionImpl(grid, pos, size, targetSubGridPath);
             } else {

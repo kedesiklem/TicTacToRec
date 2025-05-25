@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TTT_GridView.hpp"
+#include "../ModeState.hpp"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -13,18 +14,21 @@ struct TTT_Move {
     TTT_Shape shape;
 };
 
-class GameState {
+inline TTT_Shape defaultPlayer() {
+    return TTT_Shape::CROSS;
+}
+
+class GameState : public ModeState<TTT_GridView, TTT_GridLogic> {
 public:
+
     bool autoMode = false;
-    TTT_GridView& grid;
+
     TTT_Shape currentPlayer;
     Path targetSubGridPath;
     std::vector<TTT_Move> moveHistory;
     std::vector<TTT_Move> redoHistory;
 
-    GameState(TTT_GridView& grid) : grid(grid) { reset(); }
-
-    virtual void showParam(){};
+    using ModeState<TTT_GridView, TTT_GridLogic>::ModeState;
 
     bool isBotPlayer(TTT_Shape shape);
     bool playMove(Path path, TTT_Shape player);
@@ -40,10 +44,11 @@ public:
     bool undoLastMove();
     bool redoLastMove();
     
-    virtual void reset();
+    void reset() override;
+    void showParam() override {};
 };
 
-} // namespace TTT
+}; // namespace TTT
 
 std::ostream& operator<<(std::ostream& os, const TTT::TTT_Move& move);
 std::ostream& operator<<(std::ostream& os, const TTT::GameState& gameState);

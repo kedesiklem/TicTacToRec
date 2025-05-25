@@ -44,13 +44,13 @@ namespace TTT {
             ImVec2 available_size = ImVec2{min_size, min_size} - (marging * 2);
     
             if (available_size.x > 0 && available_size.y > 0) {
-                gameState.grid.update(window_pos + marging, available_size);
+                gameState.view.update(window_pos + marging, available_size);
     
-                if(!gameState.grid.grid.isLocked()) {
+                if(!gameState.grid.isLocked()) {
                     gameState.playTurn();
                 }
     
-                gameState.grid.draw(gameState.targetSubGridPath);
+                gameState.view.draw(gameState.grid, gameState.targetSubGridPath);
             }
         }
         
@@ -99,7 +99,7 @@ namespace TTT {
             ImGui::SliderInt("Grid Depth", &grid_depth, 0, 3);
     
             if (ImGui::Button("Apply Grid Settings")) {
-                modeManager().grid.grid = TTT_GridLogic(grid_rows, grid_cols, grid_depth);
+                modeManager().grid = TTT_GridLogic(grid_rows, grid_cols, grid_depth);
                 modeManager().reset();
             }
         }

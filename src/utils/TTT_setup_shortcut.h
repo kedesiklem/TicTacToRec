@@ -64,7 +64,7 @@ class PrintValidMovesFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
     void exec() override { 
-        auto validMove = gameState().grid.grid.getAvailableMoves(gameState().targetSubGridPath);
+        auto validMove = gameState().grid.getAvailableMoves(gameState().targetSubGridPath);
         std::cout << "Valid Moves[" << validMove.size() << "]" << std::endl;
         for(auto move : validMove){
             std::cout << "[" << move << "]";

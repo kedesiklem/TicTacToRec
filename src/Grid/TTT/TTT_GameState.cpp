@@ -2,10 +2,6 @@
 
 using namespace TTT;
 
-TTT_Shape defaultPlayer() {
-    return TTT_Shape::CROSS;
-}
-
 bool GameState::isBotPlayer(TTT_Shape shape) {
     return (autoMode);
 }
@@ -21,7 +17,7 @@ bool GameState::playMove(Path path, TTT_Shape player) {
 
 bool GameState::playMoveBase(Path path, TTT_Shape player) {
     if(starts_with(path, targetSubGridPath)) {
-        if(grid.grid.playMove(path, player)) {
+        if(grid.playMove(path, player)) {
             endTurn(path);
             return true;
         }
@@ -30,7 +26,7 @@ bool GameState::playMoveBase(Path path, TTT_Shape player) {
 }
 
 bool GameState::playRandom() {
-    auto move = grid.grid.getRandomAvailableMove(targetSubGridPath);
+    auto move = grid.getRandomAvailableMove(targetSubGridPath);
     if(move) {
         return playMove(move.value(), currentPlayer);
     } else {
@@ -42,7 +38,7 @@ bool GameState::playTurn() {
     if(isBotPlayer(currentPlayer)) {
         return playRandom();
     } else {
-        auto path = grid.handleGridInteraction();
+        auto path = view.handleGridInteraction(grid);
         if(path) {
             return playMove(path.value());
         }
@@ -65,7 +61,7 @@ void GameState::endTurn(const Path lastPlayedSubGridPath) {
     Path currentPath;
     for (size_t i = 0; i < targetSubGridPath.size(); ++i) {
         currentPath.push_back(targetSubGridPath[i]);        
-        if (grid.grid.getGridFromPath(currentPath).isLocked()) {
+        if (grid.getGridFromPath(currentPath).isLocked()) {
             currentPath.pop_back();
             targetSubGridPath.assign(currentPath.begin(), currentPath.end());
             break;
@@ -74,7 +70,7 @@ void GameState::endTurn(const Path lastPlayedSubGridPath) {
 }
 
 void GameState::reset() {
-    grid.grid.resetGrid();
+    grid.resetGrid();
     currentPlayer = defaultPlayer();
     targetSubGridPath.clear();
     moveHistory.clear();
@@ -91,7 +87,7 @@ bool GameState::undoLastMove() {
     targetSubGridPath = lastMove.target;
     currentPlayer = lastMove.shape;
 
-    TTT_GridLogic* currentGrid = &grid.grid;
+    TTT_GridLogic* currentGrid = &grid;
     currentGrid->setShape(TTT_Shape::NONE);
 
     for (size_t i = 0; i < lastMove.path.size(); ++i) {
@@ -184,7 +180,6 @@ bool GameState::loadState(const std::string& filename) {
     }
 
     reset();
-    grid.grid.resetGrid();
 
     std::string line;
     std::string section;

@@ -51,8 +51,8 @@ int main() {
 
     // Initialisation jeu
     TTT_GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
-    TTT_GridView gridV(grid, 0.985);
-    GameModeManager gameMode(gridV);
+    TTT_GridView gridV(0.985);
+    GameModeManager gameMode(gridV, grid);
     gameMode.changeGameMode("RandomStart");
     std::stringstream str;
 

@@ -5,7 +5,6 @@
 #include "../external/imgui/imgui.h"
 #include "GridLogic.hpp"
 
-template<typename G>
 class GridView {
 
 protected:
@@ -21,11 +20,10 @@ protected:
     }
 
 public:
-    G& grid;
     float ratio;
 
-    GridView(G& grid, float ratio)
-        : grid(grid), ratio(ratio) {}
+    GridView(float ratio)
+        : ratio(ratio) {}
 
     static std::pair<ImVec2, ImVec2> calculateDimensions(const ImVec2& size, int cols, int rows, float ratio) {
         // Total padding space to distribute (based on ratio)
