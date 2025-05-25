@@ -12,11 +12,15 @@ protected:
     ImVec2 pos;
     ImVec2 size;
 
-    bool isHovered(const ImVec2& pos, const ImVec2& size) {
-        ImVec2 mousePos = ImGui::GetMousePos();
+    bool isHovered(const ImVec2& mousePos, const ImVec2& pos, const ImVec2& size) {
         return 
             ((mousePos.x > pos.x) && (mousePos.x < (pos.x + size.x))) &&
             ((mousePos.y > pos.y) && (mousePos.y < (pos.y + size.y)));
+    }
+
+    bool isHovered(const ImVec2& pos, const ImVec2& size) {
+        ImVec2 mousePos = ImGui::GetMousePos();
+        return isHovered(mousePos, pos, size);
     }
 
 public:

@@ -3,10 +3,9 @@
 
 #include <config.h>
 #include <iostream>
-#include "utils/TTT_setup_interface.h"
-#include "utils/TTT_setup_shortcut.h"
+#include "utils/R_setup_interface.h"
 
-using namespace TTT;
+using namespace Rune;
 
 #define GRID_SIZE 3
 #define GRID_REC 1
@@ -50,16 +49,12 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialisation jeu
-    TTT_GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
-    TTT_GridView gridV(0.985);
-    GameModeManager gameMode(gridV, grid);
-    gameMode.changeGameMode("RandomStart");
+    RuneLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
+    RuneView gridV(0.985);
+    RuneState state(gridV, grid);
     std::stringstream str;
 
     LoadFonts(io, 40);
-
-    ShortcutManager shortcutManager;
-    setupShortcuts(shortcutManager, window, gameMode);
 
     // Boucle principale
     while (!glfwWindowShouldClose(window)) {
@@ -71,12 +66,10 @@ int main() {
         ImGui::NewFrame();
 
         // Configuration de l'interface
-        setup_interface(gameMode);
+        setup_interface(state);
         
         // Fin de la fenêtre de docking principale
         ImGui::End();
-
-        shortcutManager.update();
 
         // Rendu
         ImGui::Render();

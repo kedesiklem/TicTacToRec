@@ -72,6 +72,7 @@
     "variant": "cpp",
     "__nullptr": "cpp",
     "any": "cpp",
-    "filesystem": "cpp"
+    "filesystem": "cpp",
+    "r_setup_interface": "cpp"
   } // Arguments supplémentaires
 }

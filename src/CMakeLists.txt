@@ -17,7 +17,7 @@ set(IMGUI_SOURCES
 
 # Sources du jeu
 file(GLOB GRID_SOURCES ${GRID_DIR}/*.cpp)
-file(GLOB TTT_SOURCES ${GRID_DIR}/TTT/*.cpp)
+file(GLOB TTT_SOURCES ${GRID_DIR}/Rune/*.cpp)
 
 # Création de la bibliothèque principale
 add_library(game_lib STATIC
@@ -52,21 +52,21 @@ elseif(WIN32)
 endif()
 
 # Création de l'exécutable principal
-add_executable(tictactorec main.cpp)
-target_link_libraries(tictactorec PRIVATE game_lib)
+add_executable(runebuilder main.cpp)
+target_link_libraries(runebuilder PRIVATE game_lib)
 
 # Options de compilation
-target_compile_options(tictactorec PRIVATE
+target_compile_options(runebuilder PRIVATE
     -Wall
     -Wformat
     -g
 )
 
 # Configuration du répertoire de sortie
-set_target_properties(tictactorec PROPERTIES
+set_target_properties(runebuilder PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-    OUTPUT_NAME tictactorec
+    OUTPUT_NAME runebuilder
 )
 
 # Installation (optionnel)
-install(TARGETS tictactorec DESTINATION bin)
+install(TARGETS runebuilder DESTINATION bin)
