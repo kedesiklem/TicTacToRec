@@ -1,10 +1,11 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #define DEBUG
 
-#include <config.h>
 #include <iostream>
 #include "utils/TTT_setup_interface.h"
 #include "utils/TTT_setup_shortcut.h"
+#include "utils/config.h"
+
 
 using namespace TTT;
 

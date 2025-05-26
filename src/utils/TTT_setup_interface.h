@@ -30,7 +30,6 @@ namespace TTT {
         
         ImGui::DockBuilderFinish(dockspace_id);
     }
-
     void show_game_window(GameState& gameState) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoScrollbar);
@@ -71,9 +70,7 @@ namespace TTT {
         // Background color control
         static ImVec4 bg_color = ImGui::GetStyle().Colors[ImGuiCol_WindowBg];
         ImGui::ColorEdit4("Background Color", (float*)&bg_color);
-        if (ImGui::Button("Apply Background Color")) {
-            ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = bg_color;
-        }
+        ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = bg_color;
     
         ImGui::End();
     }

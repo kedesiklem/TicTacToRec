@@ -12,12 +12,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Option pour activer/désactiver les tests
-option(BUILD_TESTS "Build tests" ON)
+option(BUILD_TESTS "Build tests" OFF)
 
 # Configuration des sous-répertoires
 add_subdirectory(src)
 
 # Ajout des tests si l'option est activée
+message(STATUS "BUILD_TESTS = ${BUILD_TESTS}")
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)

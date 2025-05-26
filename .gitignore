@@ -1,6 +1,7 @@
 
 *.a
 *.o
+*.d
 
 tictactorec
 tictactorec_tests
