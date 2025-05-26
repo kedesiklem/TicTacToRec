@@ -59,9 +59,24 @@ int main() {
 
     LoadFonts(io, 40);
 
+    ImGui::FileBrowser loadFileDialog;
+    ImGui::FileBrowser saveFileDialog(ImGuiFileBrowserFlags_EnterNewFilename | ImGuiFileBrowserFlags_CloseOnEsc | ImGuiFileBrowserFlags_ConfirmOnEnter);
+    
+    loadFileDialog.SetTitle("Load File");
+    loadFileDialog.SetTypeFilters({ ".ttt" });
+
+    saveFileDialog.SetTitle("Save File");
+    saveFileDialog.SetTypeFilters({ ".ttt" });
+
     ShortcutManager shortcutManager;
     setupShortcuts(shortcutManager, window, gameMode);
 
+    shortcutManager.addShortcut({{ImGuiKey_O, true}}, 
+        new Lambda([&](){loadFileDialog.Open();}), "loadFile");
+    shortcutManager.addShortcut({{ImGuiKey_S, true}}, 
+        new Lambda([&](){saveFileDialog.Open();}), "saveFile");
+
+    bool actif = true;
     // Boucle principale
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -71,13 +86,24 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // Configuration de l'interface
-        setup_interface(gameMode);
+        actif = !(saveFileDialog.IsOpened() || loadFileDialog.IsOpened());
         
-        // Fin de la fenêtre de docking principale
-        ImGui::End();
-
+        setup_interface(gameMode, actif);
         shortcutManager.update();
+
+        saveFileDialog.Display();
+        if(saveFileDialog.HasSelected())
+        {
+            gameMode.saveState(saveFileDialog.GetSelected().string());
+            saveFileDialog.ClearSelected();
+        }
+
+        loadFileDialog.Display();
+        if(loadFileDialog.HasSelected())
+        {
+            gameMode.loadState(loadFileDialog.GetSelected().string());
+            loadFileDialog.ClearSelected();
+        }
 
         // Rendu
         ImGui::Render();

@@ -2,11 +2,7 @@
 
 #include "../Grid/TTT/TTT_GameModeManager.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-#include <imgui_internal.h>
-#include <GLFW/glfw3.h>
+#include "config.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -30,7 +26,7 @@ namespace TTT {
         
         ImGui::DockBuilderFinish(dockspace_id);
     }
-    void show_game_window(GameState& gameState) {
+    void show_game_window(GameState& gameState, bool actif) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Game", nullptr, ImGuiWindowFlags_NoScrollbar);
         
@@ -45,7 +41,7 @@ namespace TTT {
             if (available_size.x > 0 && available_size.y > 0) {
                 gameState.view.update(window_pos + marging, available_size);
     
-                if(!gameState.grid.isLocked()) {
+                if(!gameState.grid.isLocked() && actif) {
                     gameState.playTurn();
                 }
     
@@ -181,7 +177,7 @@ namespace TTT {
         
         ImGui::End();
     }
-    void setup_interface(GameModeManager& modeManager) {
+    void setup_interface(GameModeManager& modeManager, bool actif = true) {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
@@ -208,8 +204,10 @@ namespace TTT {
             setup_init(dockspace_id);
         }
         show_settings_window(ImGui::GetIO());
-        show_game_window(modeManager());
+        show_game_window(modeManager(), actif);
         show_mode_window(modeManager);
+
+        ImGui::End();
     };
 
 } // namespace

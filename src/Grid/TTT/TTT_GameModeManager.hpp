@@ -31,6 +31,8 @@ class GameRandomStart : public GameState {
 
 class GameModeManager {
     GameState* currentMode;
+
+    
     
     std::map<std::string, std::function<GameState*()>> modeFactories;
 
@@ -46,6 +48,9 @@ public:
     }
 
     void changeGameMode(const std::string& modeName);
+
+    bool saveState(const std::string& filename){currentMode->saveState(filename); return true;};
+    bool loadState(const std::string& filename){currentMode->loadState(filename); return true;};
 };
 
 }

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "config.h"
 #include <string>
-#include <imgui.h>
 #include <map>
 #include <vector>
 #include <chrono>
