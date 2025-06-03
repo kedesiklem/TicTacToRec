@@ -122,8 +122,6 @@ namespace TTT {
         auto& gameState = modeManager();
 
         if (ImGui::CollapsingHeader("Game Config")) {
-            ImGui::Text("AutoMove : %s", gameState.autoMode ? "On" : "Off");
-
             gameState.showParam();
 
             ImGui::Separator();

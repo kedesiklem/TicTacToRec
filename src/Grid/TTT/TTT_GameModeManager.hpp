@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TTT_GameState.hpp"
+#include "TTT_GameStateVariant.hpp"
 #include <unistd.h>
 #include <memory>
 #include <map>
@@ -10,7 +10,7 @@
 
 namespace TTT {
 
-class GameRandomStart : public GameState {
+class GameBotStart : public GameStateBot {
 
     bool timeLock(float minTime);
 
@@ -19,20 +19,18 @@ class GameRandomStart : public GameState {
         bool fullRun = false;
         int startMoveCount = 0;
         int startMoveDoubt[2] = {20,5};
-        float minRandomTime = 0.2;
+        float minBotTime = 0.2;
 
-    GameRandomStart(TTT_GridView& view, TTT_GridLogic& grid) : GameState(view, grid) {}
+    using GameStateBot::GameStateBot;
 
     void showParam() override;
     bool playTurn() override;
-    bool playRandom();
+    bool playBot();
     void reset() override;
 };
 
 class GameModeManager {
     GameState* currentMode;
-
-    
     
     std::map<std::string, std::function<GameState*()>> modeFactories;
 

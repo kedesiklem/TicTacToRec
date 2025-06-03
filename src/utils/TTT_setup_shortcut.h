@@ -30,14 +30,6 @@ public:
     }
 };
 
-class ToggleAutoMode : public GameFunctor {
-public:
-    using GameFunctor::GameFunctor;
-    void exec() override {
-        gameState().autoMode = !gameState().autoMode;
-    }
-};
-
 class UndoMoveFunctor : public GameFunctor {
 public:
     using GameFunctor::GameFunctor;
@@ -102,12 +94,6 @@ void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, GameMo
     
     shortcutManager.addShortcut({{ImGuiKey_S, true}, {ImGuiKey_S, true}}, 
         new SaveStateFunctor(gameMode), "Sauvegarder l'état");
-
-    shortcutManager.addShortcut({{ImGuiKey_S, true, false, true}, {ImGuiKey_S, true, false, true}}, 
-        new LoadStateFunctor(gameMode), "Charger l'état");
-
-    shortcutManager.addShortcut({{ImGuiKey_B, true}}, 
-        new ToggleAutoMode(gameMode), "Toggle autoMode");
-    }
+}
 
 }

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <memory>
 
 namespace TTT {
 
@@ -20,9 +21,6 @@ inline TTT_Shape defaultPlayer() {
 
 class GameState : public ModeState<TTT_GridView, TTT_GridLogic> {
 public:
-
-    bool autoMode = false;
-
     TTT_Shape currentPlayer;
     Path targetSubGridPath;
     std::vector<TTT_Move> moveHistory;
@@ -30,7 +28,6 @@ public:
 
     using ModeState<TTT_GridView, TTT_GridLogic>::ModeState;
 
-    bool isBotPlayer(TTT_Shape shape);
     bool playMove(Path path, TTT_Shape player);
     bool playMove(Path path);
     bool playMoveBase(Path path, TTT_Shape player);

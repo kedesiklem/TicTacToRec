@@ -2,10 +2,6 @@
 
 using namespace TTT;
 
-bool GameState::isBotPlayer(TTT_Shape shape) {
-    return (autoMode);
-}
-
 bool GameState::playMove(Path path) {
     return playMove(path, currentPlayer);
 }
@@ -35,15 +31,11 @@ bool GameState::playRandom() {
 }
 
 bool GameState::playTurn() {
-    if(isBotPlayer(currentPlayer)) {
-        return playRandom();
-    } else {
         auto path = view.handleGridInteraction(grid);
         if(path) {
             return playMove(path.value());
         }
         return false;
-    }
 }
 
 void GameState::endTurn(const Path lastPlayedSubGridPath) {
