@@ -12,6 +12,7 @@ class GameStateBot : public GameState {
     using GameState::GameState;
 
     TTT_Bot* bot;
+    std::string botName = "None";
     std::map<std::string, std::function<TTT_Bot*()>> botFactories;
 
     bool autoMode = false;
@@ -22,19 +23,22 @@ class GameStateBot : public GameState {
 
     GameStateBot(TTT_GridView& view, TTT_GridLogic& grid) : GameState(view,grid) {
         botFactories["Random"] = [&]() { return new RandomBot(); };
+        botFactories["First"] = [&]() { return new FirstMoveBot(); };
         
         changeBot("Random");
     }
 
-    void changeBot(const std::string& botName) {
-        if (botFactories.find(botName) != botFactories.end()) {
-            bot = botFactories[botName]();
+    void changeBot(const std::string& newBotName) {
+        if (botFactories.find(newBotName) != botFactories.end()) {
+            bot = botFactories[newBotName]();
+            botName = newBotName;
         }
     }
 
     bool isBotPlayer(TTT_Shape shape);
     bool playBot();
     bool playTurn() override;
+    void showParam() override;
 };
 
 } // namespace TTT

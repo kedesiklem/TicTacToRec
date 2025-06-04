@@ -45,6 +45,7 @@ void GameBotStart::reset(){
 }
 
 void GameBotStart::showParam(){
+    GameStateBot::showParam();
     ImGui::Text("%d,%d,%d", startMoveCount, startMoveDoubt[0], startMoveDoubt[1]);
     ImGui::SliderInt("Count", &startMoveDoubt[0], 0, (int)std::pow(2,7));
     ImGui::SliderInt("Random", &startMoveDoubt[1], 0, (int)std::pow(2,7) -1);
@@ -68,5 +69,6 @@ void GameModeManager::changeGameMode(const std::string& modeName) {
     if (modeFactories.find(modeName) != modeFactories.end()) {
         currentMode = modeFactories[modeName]();
         currentMode->reset();
+        currentModeName = modeName;
     }
 }

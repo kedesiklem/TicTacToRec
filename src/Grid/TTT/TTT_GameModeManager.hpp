@@ -31,6 +31,7 @@ class GameBotStart : public GameStateBot {
 
 class GameModeManager {
     GameState* currentMode;
+    std::string currentModeName = "None";
     
     std::map<std::string, std::function<GameState*()>> modeFactories;
 
@@ -39,6 +40,10 @@ public:
 
     GameState& operator()() {
         return *currentMode;
+    }
+
+    const std::string& getCurrentModeName() const {
+        return currentModeName;
     }
 
     const std::map<std::string, std::function<GameState*()>>& getAvailableModes() const {

@@ -18,6 +18,16 @@ public:
     }
 };
 
+class FirstMoveBot : public TTT_Bot {
+public:
+    std::optional<Path> getNextMove(const GameState& gameState) override {
+        auto moves = gameState.grid.getAvailableMoves(gameState.targetSubGridPath);
+        if(moves.empty())
+            return std::nullopt;
+        return moves[0];
+    }
+};
+
 // À implémenter plus tard
 class MinimaxBot : public TTT_Bot {
 public:

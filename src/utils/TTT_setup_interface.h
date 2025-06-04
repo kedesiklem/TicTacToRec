@@ -75,6 +75,9 @@ namespace TTT {
     
         // Première section déroulante pour les paramètres de la grille
         if (ImGui::CollapsingHeader("Grid Config")) {
+            ImGui::Separator();
+            ImGui::Indent(10.0f);
+
             static int grid_cols = 3;
             static int grid_rows = 3;
             static int grid_depth = 1;
@@ -95,10 +98,17 @@ namespace TTT {
                 modeManager().grid = TTT_GridLogic(grid_rows, grid_cols, grid_depth);
                 modeManager().reset();
             }
+
+            ImGui::Unindent(10.0f);
+            ImGui::Separator();
         }
     
+        ImGui::Text(("Current Mode : " + modeManager.getCurrentModeName()).c_str());
         // Deuxième section déroulante pour la sélection du mode de jeu
         if (ImGui::CollapsingHeader("Game Mode")) {
+            ImGui::Separator();
+            ImGui::Indent(10.0f);
+
             const auto& modes = modeManager.getAvailableModes();
             ImGui::BeginGroup();
             // Afficher la liste des modes disponibles avec des boutons
@@ -117,11 +127,17 @@ namespace TTT {
                 }
             }
             ImGui::EndGroup();
+            
+            ImGui::Unindent(10.0f);
+            ImGui::Separator();
         }
         
         auto& gameState = modeManager();
 
         if (ImGui::CollapsingHeader("Game Config")) {
+            ImGui::Separator();
+            ImGui::Indent(10.0f);
+
             gameState.showParam();
 
             ImGui::Separator();
@@ -137,7 +153,9 @@ namespace TTT {
             str.str("");
 
             if (ImGui::CollapsingHeader("Move History")) {
-                ImGui::Separator();        
+                ImGui::Separator();
+                ImGui::Indent(10.0f);
+                
                 ImGui::Columns(2, "historyColumns", false);
 
                 ImGui::Text("[History | %ld]", gameState.moveHistory.size());
@@ -170,7 +188,11 @@ namespace TTT {
 
                 ImGui::Columns(1);
 
+                ImGui::Unindent(10.0f);
+                ImGui::Separator();
             }
+            ImGui::Unindent(10.0f);
+            ImGui::Separator();
         }
         
         ImGui::End();
