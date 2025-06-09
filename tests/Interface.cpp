@@ -1,4 +1,4 @@
-#include "TTT/TTT_GameState.hpp"
+#include "TTT/TTT_GameStateVariant.hpp"
 #include <imgui.h>
 #include <gtest/gtest.h>
 #include <sstream>
@@ -6,14 +6,14 @@
 
 using namespace TTT;
 
-class GameStateTest : public GameState {
+class GameStateTest : public GameStateBot {
 public:
     // Exposer des méthodes pour les tests
-    using GameState::GameState;
-    using GameState::moveHistory;
-    using GameState::redoHistory;
-    using GameState::currentPlayer;
-    using GameState::targetSubGridPath;
+    using GameStateBot::GameStateBot;
+    using GameStateBot::moveHistory;
+    using GameStateBot::redoHistory;
+    using GameStateBot::currentPlayer;
+    using GameStateBot::targetSubGridPath;
 };
 
 class MockImGui {

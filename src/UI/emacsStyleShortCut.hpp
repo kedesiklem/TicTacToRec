@@ -95,7 +95,7 @@ public:
 };
 
 class ShortcutManager {
-    ShortcutTreeNode root;
+    std::vector<ShortcutTreeNode*> contextStack;
     std::vector<KeyCombo> currentSequence;
     std::chrono::steady_clock::time_point lastKeyTime;
     static constexpr std::chrono::milliseconds sequenceTimeout{1000};
@@ -103,8 +103,31 @@ class ShortcutManager {
 public:
     ~ShortcutManager() = default;
 
-    void addShortcut(const std::vector<KeyCombo>& sequence, Functor* func, const std::string& desc = "") {
-        root.addSequence(sequence, 0, func, desc);
+    // Empiler un nouveau contexte
+    ShortcutManager& pushContext(ShortcutTreeNode* context) {
+        contextStack.push_back(context);
+        return *this;
+    }
+
+    // Dépiler le contexte actuel
+    void popContext() {
+        if (!contextStack.empty()) {
+            contextStack.pop_back();
+        }
+    }
+
+    // Obtenir le contexte actuel
+    ShortcutTreeNode* getCurrentContext() const {
+        return contextStack.empty() ? nullptr : contextStack.back();
+    }
+
+    ShortcutManager& addShortcut(const std::vector<KeyCombo>& sequence, Functor* func, const std::string& desc = "") {
+        getCurrentContext()->addSequence(sequence, 0, func, desc);
+        return *this;
+    }
+
+    void addContextualShortcut(ShortcutTreeNode* context, const std::vector<KeyCombo>& sequence, Functor* func, const std::string& desc = "") {
+        context->addSequence(sequence, 0, func, desc);
     }
 
     void update() {
@@ -117,8 +140,11 @@ public:
             currentSequence.clear();
         }
 
+        // Get the current context
+        ShortcutTreeNode* currentContext = getCurrentContext();
+
         // Get the current node in the tree
-        ShortcutTreeNode* currentNode = root.findNode(currentSequence, 0);
+        ShortcutTreeNode* currentNode = currentContext->findNode(currentSequence, 0);
         if (!currentNode) {
             currentSequence.clear();
             return;
@@ -135,7 +161,7 @@ public:
                 lastKeyTime = now;
 
                 // Check if this is a complete shortcut
-                ShortcutTreeNode* nextNode = root.findNode(currentSequence, 0);
+                ShortcutTreeNode* nextNode = currentContext->findNode(currentSequence, 0);
                 if (nextNode && nextNode->shortcut) {
                     nextNode->shortcut->execute();
                     currentSequence.clear();
@@ -168,7 +194,7 @@ public:
             
             std::vector<std::pair<std::vector<KeyCombo>, std::string>> descriptions;
             std::vector<KeyCombo> currentSeq;
-            root.collectDescriptions(descriptions, currentSeq);
+            getCurrentContext()->collectDescriptions(descriptions, currentSeq);
             
             for (const auto& [sequence, desc] : descriptions) {
                 ImGui::Text("%s: %s", 

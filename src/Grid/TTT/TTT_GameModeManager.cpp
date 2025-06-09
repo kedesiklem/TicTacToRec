@@ -59,7 +59,7 @@ void GameBotStart::showParam(){
 GameModeManager::GameModeManager(TTT_GridLogic& grid, TTT_GridView& view) {
     // Enregistrement des modes disponibles
     modeFactories["Classic"] = [&]() { return new GameState(grid, view); };
-    modeFactories["RandomStart"] = [&]() { return new GameBotStart(grid, view); };
+    modeFactories["BotStart"] = [&]() { return new GameBotStart(grid, view); };
     
     // Mode par défaut
     changeGameMode("Classic");

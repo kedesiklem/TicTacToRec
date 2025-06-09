@@ -54,12 +54,12 @@ int main() {
     TTT_GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
     TTT_GridView gridV(0.985);
     GameModeManager gameMode(grid, gridV);
-    gameMode.changeGameMode("RandomStart");
+    gameMode.changeGameMode("BotStart");
     std::stringstream str;
 
     LoadFonts(io, 40);
 
-    ImGui::FileBrowser loadFileDialog;
+    ImGui::FileBrowser loadFileDialog(ImGuiFileBrowserFlags_CloseOnEsc);
     ImGui::FileBrowser saveFileDialog(ImGuiFileBrowserFlags_EnterNewFilename | ImGuiFileBrowserFlags_CloseOnEsc | ImGuiFileBrowserFlags_ConfirmOnEnter);
     
     loadFileDialog.SetTitle("Load File");
@@ -76,7 +76,8 @@ int main() {
     shortcutManager.addShortcut({{ImGuiKey_S, true}}, 
         new Lambda([&](){saveFileDialog.Open();}), "saveFile");
 
-    bool actif = true;
+    bool isSavingFile = false;
+    bool isLoadingFile = false;
     // Boucle principale
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -86,24 +87,49 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        actif = !(saveFileDialog.IsOpened() || loadFileDialog.IsOpened());
         
-        setup_interface(gameMode, actif);
+        setup_interface(gameMode, !(isSavingFile || isLoadingFile));
         shortcutManager.update();
 
-        saveFileDialog.Display();
-        if(saveFileDialog.HasSelected())
-        {
-            gameMode.saveState(saveFileDialog.GetSelected().string());
-            saveFileDialog.ClearSelected();
-        }
+        // --- SAVE FILE ---
+            saveFileDialog.Display();
+            if(saveFileDialog.IsOpened()){
+                if(!isSavingFile){
+                    shortcutManager.pushContext(new ShortcutTreeNode());
+                    isSavingFile = true;
+                }
+            }else{
+                if(isSavingFile){
+                    shortcutManager.popContext();
+                    isSavingFile = false;
+                }
+            }
 
-        loadFileDialog.Display();
-        if(loadFileDialog.HasSelected())
-        {
-            gameMode.loadState(loadFileDialog.GetSelected().string());
-            loadFileDialog.ClearSelected();
-        }
+            if(saveFileDialog.HasSelected())
+            {
+                gameMode.saveState(saveFileDialog.GetSelected().string());
+                saveFileDialog.ClearSelected();
+            }
+        
+        // --- LOAD FILE ---
+            loadFileDialog.Display();
+            if(loadFileDialog.IsOpened()){
+                if(!isLoadingFile){
+                    shortcutManager.pushContext(new ShortcutTreeNode());
+                    isLoadingFile = true;
+                }
+            }else{
+                if(isLoadingFile){
+                    shortcutManager.popContext();
+                    isLoadingFile = false;
+                }
+            }
+
+            if(loadFileDialog.HasSelected())
+            {
+                gameMode.loadState(loadFileDialog.GetSelected().string());
+                loadFileDialog.ClearSelected();
+            }
 
         // Rendu
         ImGui::Render();

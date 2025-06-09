@@ -55,12 +55,14 @@ make
 
 ### Raccourci
 
-| Touche                  | Command    |
-| ----------------------- | ---------- |
-| `Ctrl + Z`              | Undo       |
-| `Ctrl + Y`              | Redo       |
-| `Ctrl + X, Ctrl + X`    | Reset Game |
-| `Esc`                   | Quit       |
+| Touche                  | Command           |
+| ----------------------- | ------------------|
+| `Ctrl + Z`              | Undo              |
+| `Ctrl + Y`              | Redo              |
+| `Ctrl + S`              | Save Current Game |
+| `Ctrl + O`              | Load Current Game |
+| `Ctrl + X, Ctrl + X`    | Reset Game        |
+| `Esc`                   | Quit              |
 
 ## Fichiers
 
@@ -70,7 +72,7 @@ make
     - `GridLogic.hpp` : Grilles recursives (template)
     - `GridView.hpp` : Afficheurs de grilles recursives (template)
     - `TTT/` : Implementation specifique au TicTacToeRec
-  - `utils/` : Divers
+  - `UI/` : Divers
     - `config.h` : Parametrage ImGui
     - `emacsStyleShortCut.hpp` : Gestionnaire de racourcie fait maison
     - `functor.hpp` : Utilitaire pour `emacsStyleShortCut.hpp`

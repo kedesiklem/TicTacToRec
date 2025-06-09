@@ -76,23 +76,19 @@ public:
 };
 
 void setupShortcuts(ShortcutManager& shortcutManager, GLFWwindow* window, GameModeManager& gameMode) {
-    
-    shortcutManager.addShortcut({{ImGuiKey_Escape}}, 
-        new CloseWindowFunctor(window), "Fermer la fenêtre");
-
-    shortcutManager.addShortcut({{ImGuiKey_X, true}, {ImGuiKey_X, true}}, 
-        new ResetGameFunctor(gameMode), "Réinitialiser le jeu");
-
-    shortcutManager.addShortcut({{ImGuiKey_Z, true}}, 
-        new UndoMoveFunctor(gameMode), "Annuler le dernier mouvement");
-
-    shortcutManager.addShortcut({{ImGuiKey_Y, true}}, 
-        new RedoMoveFunctor(gameMode), "Rétablir le dernier mouvement");
-
-    shortcutManager.addShortcut({{ImGuiKey_P}}, 
-        new PrintValidMovesFunctor(gameMode), "Afficher les mouvements valides");
-    
-    shortcutManager.addShortcut({{ImGuiKey_S, true}, {ImGuiKey_S, true}}, 
+    // Raccourcis de jeu
+    shortcutManager.pushContext(new ShortcutTreeNode())
+    .addShortcut({{ImGuiKey_Escape}}, 
+        new CloseWindowFunctor(window), "Fermer la fenêtre")
+    .addShortcut({{ImGuiKey_X, true}, {ImGuiKey_X, true}}, 
+        new ResetGameFunctor(gameMode), "Réinitialiser le jeu")
+    .addShortcut({{ImGuiKey_Z, true}}, 
+        new UndoMoveFunctor(gameMode), "Annuler le dernier mouvement")
+    .addShortcut({{ImGuiKey_Y, true}}, 
+        new RedoMoveFunctor(gameMode), "Rétablir le dernier mouvement")
+    .addShortcut({{ImGuiKey_P}}, 
+        new PrintValidMovesFunctor(gameMode), "Afficher les mouvements valides")
+    .addShortcut({{ImGuiKey_S, true}, {ImGuiKey_S, true}}, 
         new SaveStateFunctor(gameMode), "Sauvegarder l'état");
 }
 

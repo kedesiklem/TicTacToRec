@@ -21,7 +21,7 @@ class GameStateBot : public GameState {
         bot = newBot;
     }
 
-    GameStateBot(TTT_GridView& view, TTT_GridLogic& grid) : GameState(view,grid) {
+    GameStateBot(TTT_GridLogic& grid, TTT_GridView& view) : GameState(grid, view) {
         botFactories["Random"] = [&]() { return new RandomBot(); };
         botFactories["First"] = [&]() { return new FirstMoveBot(); };
         
