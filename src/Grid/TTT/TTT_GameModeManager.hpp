@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TTT_MonteCarlo.hpp"
+#include "TTT_GameStateVariant.hpp"
 #include <unistd.h>
 #include <memory>
 #include <map>
@@ -10,7 +10,7 @@
 
 namespace TTT {
 
-class GameRandomStart : public GameState {
+class GameBotStart : public GameStateBot {
 
     bool timeLock(float minTime);
 
@@ -19,20 +19,19 @@ class GameRandomStart : public GameState {
         bool fullRun = false;
         int startMoveCount = 0;
         int startMoveDoubt[2] = {20,5};
-        float minRandomTime = 0.2;
+        float minBotTime = 0.2;
 
-        using GameState::GameState;
+    using GameStateBot::GameStateBot;
 
-        void showParam() override;
-        bool playTurn() override;
-        bool playRandom();
-        void reset() override;
+    void showParam() override;
+    bool playTurn() override;
+    bool playBot();
+    void reset() override;
 };
 
 class GameModeManager {
     GameState* currentMode;
-
-    
+    std::string currentModeName = "None";
     
     std::map<std::string, std::function<GameState*()>> modeFactories;
 
@@ -41,6 +40,10 @@ public:
 
     GameState& operator()() {
         return *currentMode;
+    }
+
+    const std::string& getCurrentModeName() const {
+        return currentModeName;
     }
 
     const std::map<std::string, std::function<GameState*()>>& getAvailableModes() const {
