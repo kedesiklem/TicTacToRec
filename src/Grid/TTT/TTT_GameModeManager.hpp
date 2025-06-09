@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TTT_GameState.hpp"
+#include "TTT_MonteCarlo.hpp"
 #include <unistd.h>
 #include <memory>
 #include <map>
@@ -21,12 +21,12 @@ class GameRandomStart : public GameState {
         int startMoveDoubt[2] = {20,5};
         float minRandomTime = 0.2;
 
-    GameRandomStart(TTT_GridView& view, TTT_GridLogic& grid) : GameState(view, grid) {}
+        using GameState::GameState;
 
-    void showParam() override;
-    bool playTurn() override;
-    bool playRandom();
-    void reset() override;
+        void showParam() override;
+        bool playTurn() override;
+        bool playRandom();
+        void reset() override;
 };
 
 class GameModeManager {
@@ -37,7 +37,7 @@ class GameModeManager {
     std::map<std::string, std::function<GameState*()>> modeFactories;
 
 public:
-    GameModeManager(TTT_GridView& view, TTT_GridLogic& grid);
+    GameModeManager(TTT_GridLogic& grid, TTT_GridView& view);
 
     GameState& operator()() {
         return *currentMode;

@@ -1,6 +1,7 @@
 # Configuration des répertoires
-set(IMGUI_DIR external/imgui)
-set(IMGUI_FILE_EXPLORER_DIR external/imgui_file_explorer)
+set(EXTERNAL_DIR ../external)
+set(IMGUI_DIR ${EXTERNAL_DIR}/imgui)
+set(IMGUI_FILE_EXPLORER_DIR ${EXTERNAL_DIR}/imgui_file_explorer)
 set(GRID_DIR Grid)
 set(OTHER_DIR utils)
 

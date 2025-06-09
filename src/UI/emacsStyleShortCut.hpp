@@ -1,12 +1,12 @@
 #pragma once
 
 #include "config.h"
+#include "functor.hpp"
 #include <string>
 #include <map>
 #include <vector>
 #include <chrono>
 #include <algorithm>
-#include <functor.hpp>
 #include <iostream>
 #include <set>
 #include <memory>

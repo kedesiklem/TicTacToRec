@@ -21,7 +21,7 @@ target_link_libraries(tictactorec_tests
 # Configuration des include directories
 target_include_directories(tictactorec_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/src/utils
+    ${CMAKE_SOURCE_DIR}/src/UI
 )
 
 # Ajout des tests à CTest

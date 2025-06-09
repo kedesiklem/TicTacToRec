@@ -18,7 +18,7 @@ inline TTT_Shape defaultPlayer() {
     return TTT_Shape::CROSS;
 }
 
-class GameState : public ModeState<TTT_GridView, TTT_GridLogic> {
+class GameState : public ModeState<TTT_GridLogic, TTT_GridView> {
 public:
 
     bool autoMode = false;
@@ -28,7 +28,7 @@ public:
     std::vector<TTT_Move> moveHistory;
     std::vector<TTT_Move> redoHistory;
 
-    using ModeState<TTT_GridView, TTT_GridLogic>::ModeState;
+    using ModeState<TTT_GridLogic, TTT_GridView>::ModeState;
 
     bool isBotPlayer(TTT_Shape shape);
     bool playMove(Path path, TTT_Shape player);

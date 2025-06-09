@@ -2,9 +2,9 @@
 #define DEBUG
 
 #include <iostream>
-#include "utils/TTT_setup_interface.h"
-#include "utils/TTT_setup_shortcut.h"
-#include "utils/config.h"
+#include "UI/TTT_setup_interface.h"
+#include "UI/TTT_setup_shortcut.h"
+#include "UI/config.h"
 
 
 using namespace TTT;
@@ -53,7 +53,7 @@ int main() {
     // Initialisation jeu
     TTT_GridLogic grid(GRID_SIZE, GRID_SIZE, GRID_REC);
     TTT_GridView gridV(0.985);
-    GameModeManager gameMode(gridV, grid);
+    GameModeManager gameMode(grid, gridV);
     gameMode.changeGameMode("RandomStart");
     std::stringstream str;
 

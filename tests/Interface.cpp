@@ -1,5 +1,5 @@
 #include "TTT/TTT_GameState.hpp"
-#include "imgui.h"
+#include <imgui.h>
 #include <gtest/gtest.h>
 #include <sstream>
 #include <vector>
@@ -30,7 +30,7 @@ TEST(GameConfigUITest, NullAndEdgeCases) {
     // Setup
     TTT_GridLogic gridLogic(3, 3);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
     
     // Test 1: Historique vide
     gameState.moveHistory.clear();
@@ -88,7 +88,7 @@ TEST(GameConfigUITest, NullAndEdgeCases) {
 TEST(GameConfigUITest, LargeHistory) {
     TTT_GridLogic gridLogic(3, 3);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
     
     // Remplir avec un grand historique
     for (int i = 0; i < 1000; i++) {
@@ -108,7 +108,7 @@ TEST(GameConfigUITest, LargeHistory) {
 TEST(GameConfigUITest, InvalidMoveEntries) {
     TTT_GridLogic gridLogic(3, 3);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
     
     // Ajouter des entrées invalides
     gameState.moveHistory.push_back({{}, {}, static_cast<TTT_Shape>(999)}); // Shape invalide
@@ -124,7 +124,7 @@ TEST(GameConfigUITest, InvalidMoveEntries) {
 TEST(GameConfigUITest, StringStreamEdgeCases) {
     TTT_GridLogic gridLogic(3, 3);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
     
     // Cas particulier pour le stringstream
     gameState.moveHistory.push_back({{}, {}, TTT_Shape::NONE});
@@ -140,7 +140,7 @@ TEST(GameConfigUITest, 1x1GridBasic) {
     // Configuration minimale 1x1
     TTT_GridLogic gridLogic(1, 1);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
 
     // Test affichage de base
     EXPECT_NO_FATAL_FAILURE({
@@ -156,7 +156,7 @@ TEST(GameConfigUITest, 1x1GridWithMoves_SegfaultFix) {
     // Configuration initiale
     TTT_GridLogic gridLogic(1, 1);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
 
     // 1. Vérification de la grille 1x1 de base
     EXPECT_TRUE(gridLogic.isLeaf());
@@ -224,7 +224,7 @@ TEST(GameConfigUITest, 1x1GridWithMoves_SegfaultFix) {
 TEST(GameConfigUITest, 1x1GridWithMoves) {
     TTT_GridLogic gridLogic(1, 1);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
 
     // Simuler quelques mouvements
     gameState.moveHistory.push_back({{}, {}, TTT_Shape::CROSS});
@@ -249,7 +249,7 @@ TEST(GameConfigUITest, 1x1GridWithMoves) {
 TEST(GameConfigUITest, 1x1GridReset) {
     TTT_GridLogic gridLogic(1, 1);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
 
     // Simuler un mouvement puis reset
     gameState.moveHistory.push_back({{}, {}, TTT_Shape::CROSS});
@@ -265,7 +265,7 @@ TEST(GameConfigUITest, 1x1GridReset) {
 TEST(GameConfigUITest, 1x1GridEdgeCases) {
     TTT_GridLogic gridLogic(1, 1);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
 
     // Cas extrêmes
     gameState.moveHistory.push_back({{999}, {}, TTT_Shape::CROSS}); // Index invalide
@@ -289,7 +289,7 @@ TEST(GameConfigUITest, 1x1GridEdgeCases) {
 TEST(GameConfigUITest, 1x1GridPathNavigation) {
     TTT_GridLogic gridLogic(1, 1);
     TTT_GridView gridView(0.9f);
-    GameStateTest gameState(gridView, gridLogic);
+    GameStateTest gameState(gridLogic, gridView);
 
     // Test navigation avec chemin (devrait être vide en 1x1)
     EXPECT_NO_FATAL_FAILURE({

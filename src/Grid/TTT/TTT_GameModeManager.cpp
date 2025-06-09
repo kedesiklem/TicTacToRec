@@ -59,10 +59,10 @@ void GameRandomStart::showParam(){
     };
 }
 
-GameModeManager::GameModeManager(TTT_GridView& view, TTT_GridLogic& grid) {
+GameModeManager::GameModeManager(TTT_GridLogic& grid, TTT_GridView& view) {
     // Enregistrement des modes disponibles
-    modeFactories["Classic"] = [&]() { return new GameState(view, grid); };
-    modeFactories["RandomStart"] = [&]() { return new GameRandomStart(view, grid); };
+    modeFactories["Classic"] = [&]() { return new GameState(grid, view); };
+    modeFactories["RandomStart"] = [&]() { return new GameRandomStart(grid, view); };
     
     // Mode par défaut
     changeGameMode("Classic");

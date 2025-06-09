@@ -1,12 +1,15 @@
 #pragma once
 
-template<typename V, typename G>
+template<typename G, typename V>
 class ModeState{
     public :
         G& grid;
         V& view;
 
+        G& getGrid(){return grid;};
+        V& getView(){return view;};
+
         virtual void reset() = 0;
         virtual void showParam() = 0;
-        ModeState(V& view, G& grid) : view(view), grid(grid){};
+        ModeState(G& grid, V& view) : grid(grid), view(view){};
 };

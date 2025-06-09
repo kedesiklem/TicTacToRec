@@ -2,7 +2,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include "../external/imgui/imgui.h"
+#include <imgui.h>
 #include "GridLogic.hpp"
 
 class GridView {
