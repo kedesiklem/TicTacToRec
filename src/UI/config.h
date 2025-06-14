@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../external/imgui/imgui.h"
-#include "../external/imgui/imgui_internal.h"
-#include "../external/imgui_file_explorer/imfilebrowser.h"
-#include "../external/imgui/backends/imgui_impl_glfw.h"
-#include "../external/imgui/backends/imgui_impl_opengl3.h"
+#include <imgui.h>
+#include <imgui_internal.h>
+#include <imfilebrowser.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <stdexcept>
